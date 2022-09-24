@@ -7,12 +7,14 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface KitEvent {
+public @interface KitEventHandler {
     boolean ignoreCooldown() default false;
 
     boolean ignoreCancelled() default false;
 
     boolean sendCooldownMessage() default true;
 
-    String[] cooldownKeys() default {};
+    String cooldownKey() default "";
+
+    EventPriority priority() default EventPriority.NORMAL;
 }

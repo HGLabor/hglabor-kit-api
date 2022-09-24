@@ -7,6 +7,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class GravityKit extends AbstractKit implements ISingleKitItem, ISingleCooldown {
+    public GravityKit() {
+        super("Gravity");
+    }
 
     public void test() {
 

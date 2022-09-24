@@ -1,11 +1,21 @@
 package de.hglabor.kitapi;
 
-import de.hglabor.kitapi.kit.kits.NoneKit;
-import de.hglabor.kitapi.registry.BuiltinRegistries;
-import de.hglabor.kitapi.registry.Identifier;
+import de.hglabor.kitapi.kit.AbstractKit;
+import de.hglabor.kitapi.kit.event.KitEventManager;
+import de.hglabor.kitapi.kit.event.player.KitPlayerToggleSneakEvent;
+import de.hglabor.kitapi.kit.kits.NinjaKit;
 
-public class KitApi {
-    public static void main(String[] args) {
-        BuiltinRegistries.KIT_REGISTRY.register(new Identifier("none"), new NoneKit());
+import java.util.HashSet;
+import java.util.Set;
+
+public final class KitApi {
+    public static final Set<AbstractKit> KIT_REGISTRY = new HashSet<>(); //TODO rename
+
+    static {
+        KIT_REGISTRY.add(NinjaKit.INSTANCE);
+        for (AbstractKit kit : KIT_REGISTRY) {
+            KitEventManager.register(kit);
+        }
+        KitEventManager.call(new KitPlayerToggleSneakEvent(null, true));
     }
 }
