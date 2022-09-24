@@ -1,11 +1,7 @@
 package de.hglabor.kitapi;
 
-import de.hglabor.kitapi.kit.kits.NoneKit;
-import de.hglabor.kitapi.registry.BuiltinRegistries;
-import de.hglabor.kitapi.registry.Identifier;
+import org.bukkit.plugin.java.JavaPlugin;
 
-public class KitApi {
-    public static void main(String[] args) {
-        BuiltinRegistries.KIT_REGISTRY.register(new Identifier("none"), new NoneKit());
-    }
+public class KitApi extends JavaPlugin {
+
 }
