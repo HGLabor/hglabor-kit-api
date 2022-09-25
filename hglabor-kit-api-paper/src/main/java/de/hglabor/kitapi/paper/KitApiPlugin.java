@@ -5,12 +5,13 @@ import de.hglabor.kitapi.kit.event.KitEventManager;
 import de.hglabor.kitapi.kit.event.player.KitItemInteractEvent;
 import de.hglabor.kitapi.kit.event.player.KitPlayerToggleSneakEvent;
 import de.hglabor.kitapi.kit.item.KitItem;
-import de.hglabor.kitapi.kit.kits.ThorKit;
+import de.hglabor.kitapi.paper.kits.ThorKit;
 import de.hglabor.kitapi.kit.player.IKitPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_18_R1.block.CraftBlock;
 import org.bukkit.craftbukkit.v1_18_R1.inventory.CraftItemStack;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -29,10 +30,11 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class KitApiPlugin extends JavaPlugin implements Listener {
-    public static final Map<UUID, IKitPlayer> PLAYER_REGISTRY = new HashMap<>();
+    public static final Map<UUID, IKitPlayer<Player>> PLAYER_REGISTRY = new HashMap<>();
 
     @Override
     public void onEnable() {
+        KitApi.register(ThorKit.INSTANCE);
         KitApi.init();
         Bukkit.getPluginManager().registerEvents(this, this);
     }
@@ -44,13 +46,13 @@ public final class KitApiPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
-        KitEventManager.call(new KitPlayerToggleSneakEvent(PLAYER_REGISTRY.computeIfAbsent(event.getPlayer().getUniqueId(), PaperKitPlayer::new), event.isSneaking()));
+        KitEventManager.call(new KitPlayerToggleSneakEvent<>(PLAYER_REGISTRY.computeIfAbsent(event.getPlayer().getUniqueId(), PaperKitPlayer::new), event.isSneaking()));
     }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.hasItem() && event.hasBlock() && event.getHand() != null) {
-            KitEventManager.call(new KitItemInteractEvent(PLAYER_REGISTRY.computeIfAbsent(event.getPlayer().getUniqueId(), PaperKitPlayer::new), toNMS(event.getItem()), toNMS(event.getAction()), toNMS(event.getClickedBlock()), toNMS(event.useInteractedBlock()), toNMS(event.useItemInHand()), toNMS(event.getHand())));
+            KitEventManager.call(new KitItemInteractEvent<>(PLAYER_REGISTRY.computeIfAbsent(event.getPlayer().getUniqueId(), PaperKitPlayer::new), event, toNMS(event.getItem())));
         }
     }
 

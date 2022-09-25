@@ -58,7 +58,7 @@ public final class KitEventManager {
         System.out.println("Registered " + data.toString());
     }
 
-    public static void call(final KitPlayerEvent event) {
+    public static <T> void call(final KitPlayerEvent<T> event) {
         List<MethodData> dataList = REGISTRY_MAP.get(event.getClass());
         if (dataList == null) return;
 
@@ -76,7 +76,7 @@ public final class KitEventManager {
                 if (!data.kit().isEnabled()) continue;
                 if (!kitPlayer.hasKit(data.kit())) continue;
                 if (event instanceof KitItemInteractEvent kitItemInteractEvent) {
-                    if (!kitItemInteractEvent.getItem().getOrCreateTag().contains(KitItem.MARKER)) {
+                    if (!kitItemInteractEvent.getItemStack().getOrCreateTag().contains(KitItem.MARKER)) {
                         continue;
                     }
                 }

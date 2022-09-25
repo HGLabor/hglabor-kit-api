@@ -1,10 +1,9 @@
 package de.hglabor.kitapi.kit.event.player;
 
-import de.hglabor.kitapi.kit.event.Cancellable;
 import de.hglabor.kitapi.kit.player.IKitPlayer;
 import org.jetbrains.annotations.NotNull;
 
-public class KitPlayerToggleSneakEvent extends KitPlayerEvent /*implements Cancellable*/ {
+public class KitPlayerToggleSneakEvent<Player> extends KitPlayerEvent<Player> /*implements Cancellable*/ {
     private final boolean isSneaking;
     private boolean cancel = false;
 

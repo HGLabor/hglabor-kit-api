@@ -4,7 +4,7 @@ import de.hglabor.kitapi.kit.event.Event;
 import de.hglabor.kitapi.kit.player.IKitPlayer;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class KitPlayerEvent extends Event {
+public abstract class KitPlayerEvent<Player> extends Event {
     protected IKitPlayer kitPlayer;
 
     public KitPlayerEvent(@NotNull final IKitPlayer who) {

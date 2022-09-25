@@ -1,18 +1,15 @@
 package de.hglabor.kitapi.paper;
 
 import de.hglabor.kitapi.kit.AbstractKit;
-import de.hglabor.kitapi.kit.cooldown.IMultiCooldown;
-import de.hglabor.kitapi.kit.cooldown.ISingleCooldown;
 import de.hglabor.kitapi.kit.player.AbstractKitPlayer;
-import net.minecraft.world.entity.player.Player;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_18_R1.entity.CraftPlayer;
+import org.bukkit.entity.Player;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public class PaperKitPlayer extends AbstractKitPlayer {
-    public PaperKitPlayer(org.bukkit.entity.Player player) {
+public class PaperKitPlayer extends AbstractKitPlayer<Player> {
+    public PaperKitPlayer(Player player) {
         this(player.getUniqueId());
     }
 
@@ -27,6 +24,6 @@ public class PaperKitPlayer extends AbstractKitPlayer {
 
     @Override
     public Optional<Player> getPlayer() {
-        return Optional.ofNullable(((CraftPlayer) Bukkit.getPlayer(uuid)).getHandle());
+        return Optional.ofNullable(Bukkit.getPlayer(uuid));
     }
 }
