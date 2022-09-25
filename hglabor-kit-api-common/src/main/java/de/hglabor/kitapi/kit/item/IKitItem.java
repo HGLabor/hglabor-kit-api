@@ -1,4 +1,7 @@
 package de.hglabor.kitapi.kit.item;
 
-public interface IKitItem<T extends IKitItem<T>> {
+import net.minecraft.world.item.ItemStack;
+
+public interface IKitItem {
+    ItemStack getItemStack();
 }

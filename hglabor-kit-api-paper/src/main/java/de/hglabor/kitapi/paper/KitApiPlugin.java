@@ -44,7 +44,7 @@ public final class KitApiPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
-        KitEventManager.call(new KitPlayerToggleSneakEvent(new PaperKitPlayer(event.getPlayer().getUniqueId()), event.isSneaking()));
+        KitEventManager.call(new KitPlayerToggleSneakEvent(PLAYER_REGISTRY.computeIfAbsent(event.getPlayer().getUniqueId(), PaperKitPlayer::new), event.isSneaking()));
     }
 
     @EventHandler

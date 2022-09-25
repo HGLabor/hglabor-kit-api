@@ -21,14 +21,6 @@ public class PaperKitPlayer extends AbstractKitPlayer {
     }
 
     @Override
-    public void addCooldown(ISingleCooldown cooldown) {
-    }
-
-    @Override
-    public void addCooldown(IMultiCooldown cooldown) {
-    }
-
-    @Override
     public boolean hasKit(AbstractKit kit) {
         return true;
     }

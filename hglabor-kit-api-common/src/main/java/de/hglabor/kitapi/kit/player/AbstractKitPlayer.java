@@ -11,26 +11,30 @@ import java.util.UUID;
 
 public abstract class AbstractKitPlayer implements IKitPlayer {
     protected final UUID uuid;
-    private final Map<ISingleCooldown, Float> singleCooldowns = new HashMap<>();
-    private final Map<IMultiCooldown, Map<String, Float>> multiCooldowns = new HashMap<>();
+    private final Map<ISingleCooldown, Long> singleCooldowns = new HashMap<>();
+    private final Map<IMultiCooldown, Map<String, Long>> multiCooldowns = new HashMap<>();
 
     protected AbstractKitPlayer(UUID uuid) {
         this.uuid = uuid;
     }
 
     @Override
-    public void addCooldown(ISingleCooldown cooldown) {
-        singleCooldowns.put(cooldown, cooldown.getCooldown());
+    public final void addCooldown(ISingleCooldown cooldown) {
+        singleCooldowns.put(cooldown, System.currentTimeMillis() + (long) (cooldown.getCooldown() * 1000L));
     }
 
     @Override
-    public boolean hasCooldown(IMultiCooldown cooldown, String key) {
+    public final boolean hasCooldown(ISingleCooldown cooldown) {
+        return System.currentTimeMillis() < singleCooldowns.getOrDefault(cooldown, 0L);
+    }
+
+    @Override
+    public final void addCooldown(IMultiCooldown cooldown) {
+    }
+
+    @Override
+    public final boolean hasCooldown(IMultiCooldown cooldown, String key) {
         return false;
-    }
-
-    @Override
-    public boolean hasCooldown(ISingleCooldown cooldown) {
-        return singleCooldowns.getOrDefault(cooldown, 0f) > 0f;
     }
 
     @Override
@@ -41,7 +45,11 @@ public abstract class AbstractKitPlayer implements IKitPlayer {
     @Override
     public void sendCooldownInfo(ISingleCooldown cooldown) {
         getPlayer().ifPresent(player -> {
-            player.sendMessage(new TextComponent("Cooldown"), Util.NIL_UUID);
+            long endTime = singleCooldowns.getOrDefault(cooldown, 0L);
+            if (endTime > 0) {
+                long remainingTime = endTime - System.currentTimeMillis();
+                player.sendMessage(new TextComponent("Cooldown " + remainingTime), Util.NIL_UUID);
+            }
         });
     }
 

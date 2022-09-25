@@ -4,7 +4,7 @@ import net.minecraft.nbt.ByteTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
-public class KitItem implements IKitItemStack {
+public class KitItem implements IKitItem {
     public static final String MARKER = "kit-item";
     public static final String UNDROPPABLE = "undroppable";
     private final ItemStack itemStack;
@@ -22,6 +22,11 @@ public class KitItem implements IKitItemStack {
 
     public KitItem makeDroppable() {
         this.itemStack.removeTagKey(UNDROPPABLE);
+        return this;
+    }
+
+    public KitItem makeUnbreakable() {
+        this.itemStack.addTagElement("Unbreakable",ByteTag.ONE);
         return this;
     }
 
