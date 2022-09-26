@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":${rootProject.name}-common", configuration = "namedElements"))
+    implementation(project(":${rootProject.name}-common"))
 }
 
 ext {

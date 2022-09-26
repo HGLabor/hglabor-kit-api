@@ -2,6 +2,10 @@ package de.hglabor.kitapi.kit.player;
 
 import de.hglabor.kitapi.kit.cooldown.IMultiCooldown;
 import de.hglabor.kitapi.kit.cooldown.ISingleCooldown;
+import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.entity.Entity;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,8 +13,9 @@ import java.util.UUID;
 
 public abstract class AbstractKitPlayer<T> implements IKitPlayer {
     protected final UUID uuid;
-    private final Map<ISingleCooldown, Long> singleCooldowns = new HashMap<>();
-    private final Map<IMultiCooldown, Map<String, Long>> multiCooldowns = new HashMap<>();
+    protected final Map<ISingleCooldown, Long> singleCooldowns = new HashMap<>();
+    protected final Map<IMultiCooldown, Map<String, Long>> multiCooldowns = new HashMap<>();
+    protected Pair<Entity, Long> latestTarget = Pair.of(null, 0L);
 
     protected AbstractKitPlayer(UUID uuid) {
         this.uuid = uuid;
@@ -41,20 +46,12 @@ public abstract class AbstractKitPlayer<T> implements IKitPlayer {
     }
 
     @Override
-    public void sendCooldownInfo(ISingleCooldown cooldown) {
-        getPlayer().ifPresent(player -> {
-            long endTime = singleCooldowns.getOrDefault(cooldown, 0L);
-            if (endTime > 0) {
-                long remainingTime = endTime - System.currentTimeMillis();
-                //player.sendMessage(new TextComponent("Cooldown " + remainingTime), Util.NIL_UUID);
-            }
-        });
+    public Pair<@Nullable Entity, Long> getLatestTarget() {
+        return latestTarget;
     }
 
     @Override
-    public void sendCooldownInfo(IMultiCooldown cooldown, String key) {
-        getPlayer().ifPresent(player -> {
-            //player.sendMessage(new TextComponent("Cooldown"), Util.NIL_UUID);
-        });
+    public void setLatestTarget(Entity entity) {
+        this.latestTarget = Pair.of(entity, System.currentTimeMillis());
     }
 }

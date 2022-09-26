@@ -1,6 +1,7 @@
 package de.hglabor.kitapi.kit.item;
 
-import net.minecraft.world.item.ItemStack;
+
+import org.bukkit.inventory.ItemStack;
 
 import java.util.function.Predicate;
 
