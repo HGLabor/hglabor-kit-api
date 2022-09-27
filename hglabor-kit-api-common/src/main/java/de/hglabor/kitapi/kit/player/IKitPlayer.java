@@ -1,35 +1,22 @@
 package de.hglabor.kitapi.kit.player;
 
 import de.hglabor.kitapi.kit.AbstractKit;
-import de.hglabor.kitapi.kit.cooldown.IMultiCooldown;
-import de.hglabor.kitapi.kit.cooldown.ISingleCooldown;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.UUID;
 
 public interface IKitPlayer {
-    void addCooldown(ISingleCooldown cooldown);
-
-    void addCooldown(IMultiCooldown cooldown, String key);
-
-    boolean hasCooldown(ISingleCooldown cooldown);
-
-    boolean hasCooldown(IMultiCooldown cooldown, String key);
-
     UUID getUuid();
 
     boolean hasKit(AbstractKit kit);
 
     Optional<Player> getPlayer();
 
-    void sendCooldownInfo(ISingleCooldown cooldown);
-
-    void sendCooldownInfo(IMultiCooldown cooldown, String key);
+    void sendCooldownInfo(AbstractKit kit, String key);
 
     Pair<@Nullable Entity, Long> getLatestTarget();
 
@@ -40,4 +27,16 @@ public interface IKitPlayer {
     <T> T getKitAttributeOrDefault(String key, T defaultValue);
 
     <T> void putKitAttribute(String key, T value);
+
+    default void addCooldown(AbstractKit abstractKit, float amount) {
+        addCooldown(abstractKit, amount, AbstractKit.DEFAULT_COOLDOWN_KEY);
+    }
+
+    void addCooldown(AbstractKit abstractKit, float amount, String action);
+
+    default boolean hasCooldown(AbstractKit abstractKit) {
+       return hasCooldown(abstractKit, AbstractKit.DEFAULT_COOLDOWN_KEY);
+    }
+
+    boolean hasCooldown(AbstractKit abstractKit, String action);
 }

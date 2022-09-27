@@ -1,7 +1,6 @@
 package de.hglabor.kitapi.paper.kits;
 
 import de.hglabor.kitapi.kit.AbstractKit;
-import de.hglabor.kitapi.kit.cooldown.ISingleCooldown;
 import de.hglabor.kitapi.kit.item.ISingleKitItem;
 import de.hglabor.kitapi.kit.item.KitItemBuilder;
 import org.bukkit.Material;
@@ -9,16 +8,17 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.inventory.ItemStack;
 
-public class DiggerKit extends AbstractKit implements ISingleKitItem, ISingleCooldown {
+public class DiggerKit extends AbstractKit implements ISingleKitItem {
     private int radius = 6;
     private float cooldown = 12f;
+    private int maxUsage = 3;
 
     public DiggerKit() {
         super("Digger");
         onKitItemPlace((event, kitPlayer) -> {
             Block block = event.getBlock();
             block.setType(Material.AIR);
-            kitPlayer.addCooldown(this);
+            applyCooldown(kitPlayer, cooldown, maxUsage);
             runTaskLater(() -> {
                 int dist = (int) Math.ceil((double) (radius - 1) / 2);
                 for (int y = -1; y >= -radius; y--) {
@@ -45,10 +45,5 @@ public class DiggerKit extends AbstractKit implements ISingleKitItem, ISingleCoo
     @Override
     public ItemStack getKitItem() {
         return new KitItemBuilder(Material.DRAGON_EGG).withAmount(16).build();
-    }
-
-    @Override
-    public float getCooldown() {
-        return cooldown;
     }
 }

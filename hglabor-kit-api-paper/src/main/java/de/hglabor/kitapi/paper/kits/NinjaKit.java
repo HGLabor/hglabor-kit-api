@@ -1,19 +1,18 @@
 package de.hglabor.kitapi.paper.kits;
 
 import de.hglabor.kitapi.kit.AbstractKit;
-import de.hglabor.kitapi.kit.cooldown.ISingleCooldown;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
-public class NinjaKit extends AbstractKit implements ISingleCooldown {
+public class NinjaKit extends AbstractKit {
     public static final NinjaKit INSTANCE = new NinjaKit();
     private final long lastHitExpiration = 15L;
     private final double radius = 30D;
     private final Material material = Material.ANDESITE_SLAB;
-    private final float cooldown;
+    private float cooldown = 4f;
 
     private NinjaKit() {
         super("Ninja");
@@ -25,13 +24,12 @@ public class NinjaKit extends AbstractKit implements ISingleCooldown {
                     if (distanceBetweenEntities(player, target) < radius * radius) {
                         player.teleport(calculateNinjaBehind(target));
                         player.getLocation().getBlock().setType(material);
-                        kitPlayer.addCooldown(this);
+                        applyCooldown(kitPlayer, cooldown);
                         kitPlayer.setLatestTarget(null);
                     }
                 }
             }
         }, PlayerToggleSneakEvent::isSneaking);
-        this.cooldown = 4f;
     }
 
     private Location calculateNinjaBehind(Entity entity) {
@@ -48,10 +46,5 @@ public class NinjaKit extends AbstractKit implements ISingleCooldown {
         ninjaLocation.setY(0);
         entityLocation.setY(0);
         return ninjaLocation.distanceSquared(entityLocation);
-    }
-
-    @Override
-    public float getCooldown() {
-        return cooldown;
     }
 }

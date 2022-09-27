@@ -1,8 +1,6 @@
 package de.hglabor.kitapi.kit;
 
 import de.hglabor.kitapi.KitApi;
-import de.hglabor.kitapi.kit.cooldown.IMultiCooldown;
-import de.hglabor.kitapi.kit.cooldown.ISingleCooldown;
 import de.hglabor.kitapi.kit.item.IKitItemSupplier;
 import de.hglabor.kitapi.kit.item.IMultiKitItem;
 import de.hglabor.kitapi.kit.item.ISingleKitItem;
@@ -24,15 +22,18 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class AbstractKit implements Listener {
+    public static final String DEFAULT_COOLDOWN_KEY = "default";
     private final String name;
     private boolean isEnabled = true;
 
@@ -66,6 +67,31 @@ public abstract class AbstractKit implements Listener {
     public void onDeactivation(IKitPlayer kitPlayer) {
     }
 
+    public final void applyCooldown(IKitPlayer kitPlayer, float amount) {
+        applyCooldown(kitPlayer, amount, Integer.MIN_VALUE, DEFAULT_COOLDOWN_KEY);
+    }
+
+    public final void applyCooldown(IKitPlayer kitPlayer, float amount, int maxUsage) {
+        applyCooldown(kitPlayer, amount, maxUsage, DEFAULT_COOLDOWN_KEY);
+    }
+
+    public final void applyCooldown(IKitPlayer kitPlayer, float amount, String action) {
+        applyCooldown(kitPlayer, amount, Integer.MIN_VALUE, action);
+    }
+
+    @SuppressWarnings("unchecked")
+    public final void applyCooldown(IKitPlayer kitPlayer, float amount, int maxUses, String action) {
+        String key = this.getName() + "kitUsages";
+        if (kitPlayer.getKitAttribute(key) == null) {
+            kitPlayer.putKitAttribute(key, new HashMap<>());
+        }
+        AtomicInteger kitUses = ((Map<String, AtomicInteger>) kitPlayer.getKitAttribute(key)).computeIfAbsent(action, s -> new AtomicInteger(1));
+        if (kitUses.getAndIncrement() >= maxUses) {
+            kitPlayer.addCooldown(this, amount, action);
+            kitUses.set(1);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public final <T extends Event> void onEvent(Class<T> clazz, Consumer<T> consumer) {
         Bukkit.getPluginManager().registerEvent(clazz, this, EventPriority.NORMAL, (listener, event) -> {
@@ -91,59 +117,59 @@ public abstract class AbstractKit implements Listener {
     }
 
     public final void onKitPlayerAttacksEntity(BiConsumer<EntityDamageByEntityEvent, IKitPlayer> consumer) {
-        onKitPlayerEvent(EntityDamageByEntityEvent.class, EventUtils::getAttacker, consumer, false, t -> true, "", false, null);
+        onKitPlayerEvent(EntityDamageByEntityEvent.class, EventUtils::getAttacker, consumer, false, t -> true, DEFAULT_COOLDOWN_KEY, false, null);
     }
 
     public final void onKitPlayerKillsEntity(BiConsumer<EntityDeathEvent, IKitPlayer> consumer) {
-        onKitPlayerEvent(EntityDeathEvent.class, EventUtils::getKiller, consumer, false, t -> true, "", false, null);
+        onKitPlayerEvent(EntityDeathEvent.class, EventUtils::getKiller, consumer, false, t -> true, DEFAULT_COOLDOWN_KEY, false, null);
     }
 
     public final void onKitPlayerKillsEntity(BiConsumer<EntityDeathEvent, IKitPlayer> consumer, ItemStack itemStack) {
-        onKitPlayerEvent(EntityDeathEvent.class, EventUtils::getKiller, consumer, false, t -> true, "", true, itemStack);
+        onKitPlayerEvent(EntityDeathEvent.class, EventUtils::getKiller, consumer, false, t -> true, DEFAULT_COOLDOWN_KEY, true, itemStack);
     }
 
     public final <T extends PlayerEvent> void onKitPlayerEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer, Function<T, Boolean> sendCooldownMessage) {
-        onKitPlayerEvent(clazz, consumer, false, sendCooldownMessage, "", false);
+        onKitPlayerEvent(clazz, consumer, false, sendCooldownMessage, DEFAULT_COOLDOWN_KEY, false);
     }
 
     public final <T extends PlayerEvent> void onKitPlayerEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer, Function<T, Boolean> sendCooldownMessage, boolean ignoreCooldown) {
-        onKitPlayerEvent(clazz, consumer, ignoreCooldown, sendCooldownMessage, "", false);
+        onKitPlayerEvent(clazz, consumer, ignoreCooldown, sendCooldownMessage, DEFAULT_COOLDOWN_KEY, false);
     }
 
     public final <T extends Event> void onKitPlayerEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer) {
-        onKitPlayerEvent(clazz, EventUtils::getPlayer, consumer, false, t -> true, "", false, null);
+        onKitPlayerEvent(clazz, EventUtils::getPlayer, consumer, false, t -> true, DEFAULT_COOLDOWN_KEY, false, null);
     }
 
     public final <T extends Event> void onKitPlayerEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer, boolean ignoreCooldown) {
-        onKitPlayerEvent(clazz, EventUtils::getPlayer, consumer, ignoreCooldown, t -> true, "", false, null);
+        onKitPlayerEvent(clazz, EventUtils::getPlayer, consumer, ignoreCooldown, t -> true, DEFAULT_COOLDOWN_KEY, false, null);
     }
 
     public final <T extends Event> void onKitPlayerEvent(Class<T> clazz, Function<T, Player> playerGetter, BiConsumer<T, IKitPlayer> consumer) {
-        onKitPlayerEvent(clazz, playerGetter, consumer, false, t -> true, "", false, null);
+        onKitPlayerEvent(clazz, playerGetter, consumer, false, t -> true, DEFAULT_COOLDOWN_KEY, false, null);
     }
 
     public final void onKitItemBreaksBlock(BiConsumer<BlockBreakEvent, IKitPlayer> consumer) {
-        onKitPlayerEvent(BlockBreakEvent.class, EventUtils::getPlayer, consumer, false, t -> true, "", true, null);
+        onKitPlayerEvent(BlockBreakEvent.class, EventUtils::getPlayer, consumer, false, t -> true, DEFAULT_COOLDOWN_KEY, true, null);
     }
 
     public final void onKitItemBreaksBlock(BiConsumer<BlockBreakEvent, IKitPlayer> consumer, ItemStack itemStack) {
-        onKitPlayerEvent(BlockBreakEvent.class, EventUtils::getPlayer, consumer, false, t -> true, "", true, itemStack);
+        onKitPlayerEvent(BlockBreakEvent.class, EventUtils::getPlayer, consumer, false, t -> true, DEFAULT_COOLDOWN_KEY, true, itemStack);
     }
 
     public final void onKitItemPlace(BiConsumer<BlockPlaceEvent, IKitPlayer> consumer) {
-        onKitPlayerEvent(BlockPlaceEvent.class, EventUtils::getPlayer, consumer, false, t -> true, "", true, null);
+        onKitPlayerEvent(BlockPlaceEvent.class, EventUtils::getPlayer, consumer, false, t -> true, DEFAULT_COOLDOWN_KEY, true, null);
     }
 
     public final void onKitItemPlace(BiConsumer<BlockPlaceEvent, IKitPlayer> consumer, ItemStack itemStack) {
-        onKitPlayerEvent(BlockPlaceEvent.class, EventUtils::getPlayer, consumer, false, t -> true, "", true, itemStack);
+        onKitPlayerEvent(BlockPlaceEvent.class, EventUtils::getPlayer, consumer, false, t -> true, DEFAULT_COOLDOWN_KEY, true, itemStack);
     }
 
     public final void onKitItemRightClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer) {
-        onKitItemClick(consumer, false, event -> true, "", null, Action::isRightClick);
+        onKitItemClick(consumer, false, event -> true, DEFAULT_COOLDOWN_KEY, null, Action::isRightClick);
     }
 
     public final void onKitItemRightClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer, ItemStack itemStack) {
-        onKitItemClick(consumer, false, event -> true, "", itemStack, Action::isRightClick);
+        onKitItemClick(consumer, false, event -> true, DEFAULT_COOLDOWN_KEY, itemStack, Action::isRightClick);
     }
 
     public final void onKitItemRightClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer, ItemStack itemStack, String cooldownKey) {
@@ -151,11 +177,11 @@ public abstract class AbstractKit implements Listener {
     }
 
     public final void onKitItemLeftClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer) {
-        onKitItemClick(consumer, false, event -> true, "", null, Action::isLeftClick);
+        onKitItemClick(consumer, false, event -> true, DEFAULT_COOLDOWN_KEY, null, Action::isLeftClick);
     }
 
     public final void onKitItemLeftClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer, ItemStack itemStack) {
-        onKitItemClick(consumer, false, event -> true, "", itemStack, Action::isLeftClick);
+        onKitItemClick(consumer, false, event -> true, DEFAULT_COOLDOWN_KEY, itemStack, Action::isLeftClick);
     }
 
     public final void onKitItemLeftClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer, ItemStack itemStack, String cooldownKey) {
@@ -178,11 +204,11 @@ public abstract class AbstractKit implements Listener {
     }
 
     public final void onKitItemRightClickAtEntity(BiConsumer<PlayerInteractEntityEvent, IKitPlayer> consumer) {
-        onKitItemRightClickAtEntity(consumer, false, event -> true, "", null);
+        onKitItemRightClickAtEntity(consumer, false, event -> true, DEFAULT_COOLDOWN_KEY, null);
     }
 
     public final void onKitItemRightClickAtEntity(BiConsumer<PlayerInteractEntityEvent, IKitPlayer> consumer, ItemStack itemStack) {
-        onKitItemRightClickAtEntity(consumer, false, event -> true, "", itemStack);
+        onKitItemRightClickAtEntity(consumer, false, event -> true, DEFAULT_COOLDOWN_KEY, itemStack);
     }
 
     public final void onKitItemRightClickAtEntity(BiConsumer<PlayerInteractEntityEvent, IKitPlayer> consumer, ItemStack itemStack, String cooldownKey) {
@@ -200,11 +226,11 @@ public abstract class AbstractKit implements Listener {
     }
 
     public final void onKitItemLeftClickAtEntity(BiConsumer<EntityDamageByEntityEvent, IKitPlayer> consumer) {
-        onKitItemLeftClickAtEntity(consumer, false, event -> true, "", null);
+        onKitItemLeftClickAtEntity(consumer, false, event -> true, DEFAULT_COOLDOWN_KEY, null);
     }
 
     public final void onKitItemLeftClickAtEntity(BiConsumer<EntityDamageByEntityEvent, IKitPlayer> consumer, ItemStack itemStack) {
-        onKitItemLeftClickAtEntity(consumer, false, event -> true, "", itemStack);
+        onKitItemLeftClickAtEntity(consumer, false, event -> true, DEFAULT_COOLDOWN_KEY, itemStack);
     }
 
     public final void onKitItemLeftClickAtEntity(BiConsumer<EntityDamageByEntityEvent, IKitPlayer> consumer, ItemStack itemStack, String cooldownKey) {
@@ -264,30 +290,16 @@ public abstract class AbstractKit implements Listener {
             }
         }
         if (!ignoreCooldown) {
-            if (this instanceof ISingleCooldown singleCooldown) {
-                if (kitPlayer.hasCooldown(singleCooldown)) {
-                    if (sendCooldownMessage.apply((T) event)) {
-                        kitPlayer.sendCooldownInfo(singleCooldown);
-                    }
-                    if (event instanceof PlayerInteractEvent) {
-                        ((PlayerInteractEvent) event).setCancelled(true);
-                    } else if (event instanceof BlockPlaceEvent placeEvent) {
-                        placeEvent.setCancelled(true);
-                    }
-                    return;
+            if (kitPlayer.hasCooldown(this, cooldownKey)) {
+                if (sendCooldownMessage.apply((T) event)) {
+                    kitPlayer.sendCooldownInfo(this, cooldownKey);
                 }
-            } else if (this instanceof IMultiCooldown multiCooldown) {
-                if (kitPlayer.hasCooldown(multiCooldown, cooldownKey)) {
-                    if (sendCooldownMessage.apply((T) event)) {
-                        kitPlayer.sendCooldownInfo(multiCooldown, cooldownKey);
-                    }
-                    if (event instanceof PlayerInteractEvent) {
-                        ((PlayerInteractEvent) event).setCancelled(true);
-                    } else if (event instanceof BlockPlaceEvent placeEvent) {
-                        placeEvent.setCancelled(true);
-                    }
-                    return;
+                if (event instanceof PlayerInteractEvent) {
+                    ((PlayerInteractEvent) event).setCancelled(true);
+                } else if (event instanceof BlockPlaceEvent placeEvent) {
+                    placeEvent.setCancelled(true);
                 }
+                return;
             }
         }
         consumer.accept((T) event, kitPlayer);

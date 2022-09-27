@@ -1,7 +1,6 @@
 package de.hglabor.kitapi.kit.player;
 
-import de.hglabor.kitapi.kit.cooldown.IMultiCooldown;
-import de.hglabor.kitapi.kit.cooldown.ISingleCooldown;
+import de.hglabor.kitapi.kit.AbstractKit;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.Nullable;
@@ -12,8 +11,6 @@ import java.util.UUID;
 
 public abstract class AbstractKitPlayer implements IKitPlayer {
     protected final UUID uuid;
-    protected final Map<ISingleCooldown, Long> singleCooldowns = new HashMap<>();
-    protected final Map<IMultiCooldown, Map<String, Long>> multiCooldowns = new HashMap<>();
     protected final Map<String, Object> kitAttributes = new HashMap<>();
     protected Pair<Entity, Long> latestTarget = Pair.of(null, 0L);
 
@@ -21,24 +18,14 @@ public abstract class AbstractKitPlayer implements IKitPlayer {
         this.uuid = uuid;
     }
 
-    @Override
-    public final void addCooldown(ISingleCooldown cooldown) {
-        singleCooldowns.put(cooldown, System.currentTimeMillis() + (long) (cooldown.getCooldown() * 1000L));
+    @SuppressWarnings("unchecked")
+    public void addCooldown(AbstractKit abstractKit, float amount, String action) {
+        ((Map<String, Long>) kitAttributes.computeIfAbsent(abstractKit.getName() + "kitCooldown", x -> new HashMap<>())).put(action, System.currentTimeMillis() + (long) (amount * 1000L));
     }
 
-    @Override
-    public final boolean hasCooldown(ISingleCooldown cooldown) {
-        return System.currentTimeMillis() < singleCooldowns.getOrDefault(cooldown, 0L);
-    }
-
-    @Override
-    public final void addCooldown(IMultiCooldown cooldown, String key) {
-        multiCooldowns.computeIfAbsent(cooldown, x -> new HashMap<>()).put(key, System.currentTimeMillis() + (long) (cooldown.getCooldowns().getOrDefault(key, 0f) * 1000L));
-    }
-
-    @Override
-    public final boolean hasCooldown(IMultiCooldown cooldown, String key) {
-        return System.currentTimeMillis() < multiCooldowns.getOrDefault(cooldown, new HashMap<>()).getOrDefault(key, 0L);
+    @SuppressWarnings("unchecked")
+    public final boolean hasCooldown(AbstractKit kit, String action) {
+        return System.currentTimeMillis() < ((Map<String, Long>) kitAttributes.getOrDefault(kit.getName() + "kitCooldown", new HashMap<>())).getOrDefault(action, 0L);
     }
 
     @Override

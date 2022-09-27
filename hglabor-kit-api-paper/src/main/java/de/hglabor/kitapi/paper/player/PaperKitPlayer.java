@@ -1,13 +1,12 @@
 package de.hglabor.kitapi.paper.player;
 
 import de.hglabor.kitapi.kit.AbstractKit;
-import de.hglabor.kitapi.kit.cooldown.IMultiCooldown;
-import de.hglabor.kitapi.kit.cooldown.ISingleCooldown;
 import de.hglabor.kitapi.kit.player.AbstractKitPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,21 +26,11 @@ public class PaperKitPlayer extends AbstractKitPlayer {
         return Optional.ofNullable(Bukkit.getPlayer(uuid));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void sendCooldownInfo(ISingleCooldown cooldown) {
+    public void sendCooldownInfo(AbstractKit kit, String key) {
         getPlayer().ifPresent(player -> {
-            long endTime = singleCooldowns.getOrDefault(cooldown, 0L);
-            if (endTime > 0) {
-                long remainingTime = endTime - System.currentTimeMillis();
-                player.sendMessage("Cooldown " + remainingTime);
-            }
-        });
-    }
-
-    @Override
-    public void sendCooldownInfo(IMultiCooldown cooldown, String key) {
-        getPlayer().ifPresent(player -> {
-            long endTime = multiCooldowns.getOrDefault(cooldown, new HashMap<>()).getOrDefault(key, 0L);
+            long endTime = ((Map<String, Long>) kitAttributes.getOrDefault(kit.getName() + "kitCooldown", new HashMap<>())).getOrDefault(key, 0L);
             if (endTime > 0) {
                 long remainingTime = endTime - System.currentTimeMillis();
                 player.sendMessage("Cooldown for Key " + key + " " + remainingTime);
