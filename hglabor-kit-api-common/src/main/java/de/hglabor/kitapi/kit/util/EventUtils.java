@@ -2,9 +2,9 @@ package de.hglabor.kitapi.kit.util;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.*;
+import org.bukkit.event.inventory.InventoryInteractEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -21,6 +21,14 @@ public final class EventUtils {
             return getLauncher(launchEvent);
         } else if (event instanceof PlayerEvent playerEvent) {
             return playerEvent.getPlayer();
+        } else if (event instanceof PlayerDeathEvent deathEvent) {
+            return getKiller(deathEvent);
+        } else if (event instanceof EntityDeathEvent deathEvent) {
+            return getKiller(deathEvent);
+        } else if (event instanceof InventoryInteractEvent interactEvent) {
+            return (Player) interactEvent.getWhoClicked();
+        } else if (event instanceof BlockPlaceEvent blockPlaceEvent) {
+            return blockPlaceEvent.getPlayer();
         }
         return null;
     }
@@ -38,6 +46,14 @@ public final class EventUtils {
     public static Player getLauncher(ProjectileLaunchEvent event) {
         if (event.getEntity().getShooter() instanceof Player player) return player;
         return null;
+    }
+
+    public static Player getKiller(PlayerDeathEvent event) {
+        return event.getPlayer().getKiller();
+    }
+
+    public static Player getKiller(EntityDeathEvent event) {
+        return event.getEntity().getKiller();
     }
 
     public static boolean isRightClick(PlayerInteractEvent event) {

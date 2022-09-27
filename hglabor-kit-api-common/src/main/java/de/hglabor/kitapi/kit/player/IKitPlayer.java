@@ -34,4 +34,10 @@ public interface IKitPlayer {
     Pair<@Nullable Entity, Long> getLatestTarget();
 
     void setLatestTarget(Entity entity);
+
+    <T> T getKitAttribute(String key);
+
+    <T> T getKitAttributeOrDefault(String key, T defaultValue);
+
+    <T> void putKitAttribute(String key, T value);
 }

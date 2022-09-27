@@ -15,11 +15,16 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.BiConsumer;
@@ -61,7 +66,7 @@ public abstract class AbstractKit implements Listener {
     }
 
     @SuppressWarnings("unchecked")
-    public final <T extends Event> void event(Class<T> clazz, Consumer<T> consumer) {
+    public final <T extends Event> void onEvent(Class<T> clazz, Consumer<T> consumer) {
         Bukkit.getPluginManager().registerEvent(clazz, this, EventPriority.NORMAL, (listener, event) -> {
             try {
                 if (isEnabled()) {
@@ -72,20 +77,44 @@ public abstract class AbstractKit implements Listener {
         }, KitApi.getPlugin());
     }
 
-    public final <T extends Event> void playerKitEventWithKitItem(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer) {
-        playerKitEvent(clazz, EventUtils::getPlayer, consumer, false, t -> true, "", true);
+    public final void onKitPlayerAttacksEntity(BiConsumer<EntityDamageByEntityEvent, IKitPlayer> consumer) {
+        onKitPlayerEvent(EntityDamageByEntityEvent.class, EventUtils::getAttacker, consumer, false, t -> true, "", false, null);
     }
 
-    public final <T extends PlayerEvent> void playerKitEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer, Function<T, Boolean> sendCooldownMessage) {
-        playerKitEvent(clazz, consumer, false, sendCooldownMessage, "", false);
+    public final void onKitPlayerKillsEntity(BiConsumer<EntityDeathEvent, IKitPlayer> consumer) {
+        onKitPlayerEvent(EntityDeathEvent.class, EventUtils::getKiller, consumer, false, t -> true, "", false, null);
     }
 
-    public final <T extends Event> void playerKitEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer) {
-        playerKitEvent(clazz, EventUtils::getPlayer, consumer, false, t -> true, "", false);
+    public final void onKitPlayerKillsEntity(BiConsumer<EntityDeathEvent, IKitPlayer> consumer, ItemStack itemStack) {
+        onKitPlayerEvent(EntityDeathEvent.class, EventUtils::getKiller, consumer, false, t -> true, "", true, itemStack);
     }
 
-    public final <T extends Event> void playerKitEvent(Class<T> clazz, Function<T, Player> playerGetter, BiConsumer<T, IKitPlayer> consumer) {
-        playerKitEvent(clazz, playerGetter, consumer, false, t -> true, "", false);
+    public final <T extends PlayerEvent> void onKitPlayerEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer, Function<T, Boolean> sendCooldownMessage) {
+        onKitPlayerEvent(clazz, consumer, false, sendCooldownMessage, "", false);
+    }
+
+    public final <T extends PlayerEvent> void onKitPlayerEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer, Function<T, Boolean> sendCooldownMessage, boolean ignoreCooldown) {
+        onKitPlayerEvent(clazz, consumer, ignoreCooldown, sendCooldownMessage, "", false);
+    }
+
+    public final <T extends Event> void onKitPlayerEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer) {
+        onKitPlayerEvent(clazz, EventUtils::getPlayer, consumer, false, t -> true, "", false, null);
+    }
+
+    public final <T extends Event> void onKitPlayerEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer, boolean ignoreCooldown) {
+        onKitPlayerEvent(clazz, EventUtils::getPlayer, consumer, ignoreCooldown, t -> true, "", false, null);
+    }
+
+    public final <T extends Event> void onKitPlayerEvent(Class<T> clazz, Function<T, Player> playerGetter, BiConsumer<T, IKitPlayer> consumer) {
+        onKitPlayerEvent(clazz, playerGetter, consumer, false, t -> true, "", false, null);
+    }
+
+    public final void onKitItemPlace(BiConsumer<BlockPlaceEvent, IKitPlayer> consumer) {
+        onKitPlayerEvent(BlockPlaceEvent.class, EventUtils::getPlayer, consumer, false, t -> true, "", true, null);
+    }
+
+    public final void onKitItemPlace(BiConsumer<BlockPlaceEvent, IKitPlayer> consumer, ItemStack itemStack) {
+        onKitPlayerEvent(BlockPlaceEvent.class, EventUtils::getPlayer, consumer, false, t -> true, "", true, itemStack);
     }
 
     public final void onKitItemRightClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer) {
@@ -116,7 +145,10 @@ public abstract class AbstractKit implements Listener {
         Bukkit.getPluginManager().registerEvent(PlayerInteractEvent.class, this, EventPriority.NORMAL, (listener, event) -> {
             try {
                 if (actionGetter.apply(((PlayerInteractEvent) event).getAction())) {
-                    ((PlayerInteractEvent) event).setCancelled(true);
+                    ItemStack item = ((PlayerInteractEvent) event).getItem();
+                    if (item != null && isKitItem(item, kitItem)) {
+                        ((PlayerInteractEvent) event).setCancelled(true);
+                    }
                     handlePlayerEvent(consumer, event, ((PlayerInteractEvent) event).getPlayer(), ignoreCooldown, sendCooldownMessage, cooldownKey, true, kitItem);
                 }
             } catch (ClassCastException ignored) {
@@ -146,17 +178,38 @@ public abstract class AbstractKit implements Listener {
         }, KitApi.getPlugin());
     }
 
-    @SuppressWarnings("unchecked")
-    public final <T extends Event> void playerKitEvent(Class<T> clazz, Function<T, Player> playerGetter, BiConsumer<T, IKitPlayer> consumer, boolean ignoreCooldown, Function<T, Boolean> sendCooldownMessage, String cooldownKey, boolean withKitItem) {
-        Bukkit.getPluginManager().registerEvent(clazz, this, EventPriority.NORMAL, (listener, event) -> {
+    public final void onKitItemLeftClickAtEntity(BiConsumer<EntityDamageByEntityEvent, IKitPlayer> consumer) {
+        onKitItemLeftClickAtEntity(consumer, false, event -> true, "", null);
+    }
+
+    public final void onKitItemLeftClickAtEntity(BiConsumer<EntityDamageByEntityEvent, IKitPlayer> consumer, ItemStack itemStack) {
+        onKitItemLeftClickAtEntity(consumer, false, event -> true, "", itemStack);
+    }
+
+    public final void onKitItemLeftClickAtEntity(BiConsumer<EntityDamageByEntityEvent, IKitPlayer> consumer, ItemStack itemStack, String cooldownKey) {
+        onKitItemLeftClickAtEntity(consumer, false, event -> true, cooldownKey, itemStack);
+    }
+
+    public final void onKitItemLeftClickAtEntity(BiConsumer<EntityDamageByEntityEvent, IKitPlayer> consumer, boolean ignoreCooldown, Function<EntityDamageByEntityEvent, Boolean> sendCooldownMessage, String cooldownKey, ItemStack itemStack) {
+        Bukkit.getPluginManager().registerEvent(EntityDamageByEntityEvent.class, this, EventPriority.NORMAL, (listener, event) -> {
             try {
-                handlePlayerEvent(consumer, event, playerGetter.apply((T) event), ignoreCooldown, sendCooldownMessage, cooldownKey, withKitItem, null);
+                handlePlayerEvent(consumer, event, EventUtils.getPlayer(event), ignoreCooldown, sendCooldownMessage, cooldownKey, true, itemStack);
             } catch (ClassCastException ignored) {
             }
         }, KitApi.getPlugin());
     }
 
-    public final <T extends Event> void playerKitEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer, boolean ignoreCooldown, Function<T, Boolean> sendCooldownMessage, String cooldownKey, boolean withKitItem) {
+    @SuppressWarnings("unchecked")
+    public final <T extends Event> void onKitPlayerEvent(Class<T> clazz, Function<T, Player> playerGetter, BiConsumer<T, IKitPlayer> consumer, boolean ignoreCooldown, Function<T, Boolean> sendCooldownMessage, String cooldownKey, boolean withKitItem, ItemStack item) {
+        Bukkit.getPluginManager().registerEvent(clazz, this, EventPriority.NORMAL, (listener, event) -> {
+            try {
+                handlePlayerEvent(consumer, event, playerGetter.apply((T) event), ignoreCooldown, sendCooldownMessage, cooldownKey, withKitItem, item);
+            } catch (ClassCastException ignored) {
+            }
+        }, KitApi.getPlugin());
+    }
+
+    public final <T extends Event> void onKitPlayerEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer, boolean ignoreCooldown, Function<T, Boolean> sendCooldownMessage, String cooldownKey, boolean withKitItem) {
         Bukkit.getPluginManager().registerEvent(clazz, this, EventPriority.NORMAL, (listener, event) -> {
             try {
                 handlePlayerEvent(consumer, event, ((PlayerEvent) event).getPlayer(), ignoreCooldown, sendCooldownMessage, cooldownKey, withKitItem, null);
@@ -177,6 +230,8 @@ public abstract class AbstractKit implements Listener {
                 hand = interactEvent.getHand() != null ? interactEvent.getHand() : EquipmentSlot.HAND;
             } else if (event instanceof PlayerInteractEntityEvent interactEntityEvent) {
                 hand = interactEntityEvent.getHand();
+            } else if (event instanceof BlockPlaceEvent blockPlaceEvent) {
+                hand = blockPlaceEvent.getHand();
             }
 
             ItemStack itemInMainHand = player.getInventory().getItem(hand);
@@ -195,6 +250,8 @@ public abstract class AbstractKit implements Listener {
                     }
                     if (event instanceof PlayerInteractEvent) {
                         ((PlayerInteractEvent) event).setCancelled(true);
+                    } else if (event instanceof BlockPlaceEvent placeEvent) {
+                        placeEvent.setCancelled(true);
                     }
                     return;
                 }
@@ -205,11 +262,21 @@ public abstract class AbstractKit implements Listener {
                     }
                     if (event instanceof PlayerInteractEvent) {
                         ((PlayerInteractEvent) event).setCancelled(true);
+                    } else if (event instanceof BlockPlaceEvent placeEvent) {
+                        placeEvent.setCancelled(true);
                     }
                     return;
                 }
             }
         }
         consumer.accept((T) event, kitPlayer);
+    }
+
+    public final BukkitTask runTaskLater(Runnable runnable, long delay) {
+        return Bukkit.getScheduler().runTaskLater(KitApi.getPlugin(), runnable, delay);
+    }
+
+    private boolean isKitItem(ItemStack item, ItemStack kitItem) {
+        return item.isSimilar(kitItem);
     }
 }

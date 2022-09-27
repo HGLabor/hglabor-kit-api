@@ -1,15 +1,13 @@
 package de.hglabor.kitapi.paper;
 
 import de.hglabor.kitapi.KitApi;
+import de.hglabor.kitapi.kit.AbstractKit;
+import de.hglabor.kitapi.kit.item.IMultiKitItem;
+import de.hglabor.kitapi.kit.item.ISingleKitItem;
 import de.hglabor.kitapi.kit.item.KitItemBuilder;
 import de.hglabor.kitapi.kit.player.IKitPlayer;
 import de.hglabor.kitapi.paper.command.KitSettingsCommand;
-import de.hglabor.kitapi.paper.kits.ManipulationKit;
-import de.hglabor.kitapi.paper.kits.MultiKitItemDummy;
-import de.hglabor.kitapi.paper.kits.NinjaKit;
-import de.hglabor.kitapi.paper.kits.SnailKit;
-import de.hglabor.kitapi.paper.kits.SwitcherKit;
-import de.hglabor.kitapi.paper.kits.ThorKit;
+import de.hglabor.kitapi.paper.kits.*;
 import de.hglabor.kitapi.paper.player.PaperKitPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_18_R1.CraftServer;
@@ -38,6 +36,8 @@ public final class KitApiPlugin extends JavaPlugin implements Listener {
         KitApi.register(SnailKit.INSTANCE);
         KitApi.register(ManipulationKit.INSTANCE);
         KitApi.register(MultiKitItemDummy.INSTANCE);
+        KitApi.register(SoulstealerKit.INSTANCE);
+        KitApi.register(new DiggerKit());
         Bukkit.getPluginManager().registerEvents(this, this);
         KitSettingsCommand.register(((CraftServer) Bukkit.getServer()).getServer().vanillaCommandDispatcher.getDispatcher());
     }
@@ -57,9 +57,12 @@ public final class KitApiPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        event.getPlayer().getInventory().addItem(ManipulationKit.INSTANCE.getKitItem());
-        event.getPlayer().getInventory().addItem(ThorKit.INSTANCE.getKitItem());
-        event.getPlayer().getInventory().addItem(SwitcherKit.INSTANCE.getKitItem());
-        event.getPlayer().getInventory().addItem(MultiKitItemDummy.INSTANCE.getKitItems().toArray(new ItemStack[0]));
+        for (AbstractKit kit : KitApi.KIT_REGISTRY) {
+            if (kit instanceof ISingleKitItem singleKitItem) {
+                event.getPlayer().getInventory().addItem(singleKitItem.getKitItem());
+            } else if (kit instanceof IMultiKitItem multiKitItem) {
+                event.getPlayer().getInventory().addItem(multiKitItem.getKitItems().toArray(new ItemStack[0]));
+            }
+        }
     }
 }

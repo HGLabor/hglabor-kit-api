@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 
-public class PaperKitPlayer extends AbstractKitPlayer<Player> {
+public class PaperKitPlayer extends AbstractKitPlayer {
 
     public PaperKitPlayer(UUID uuid) {
         super(uuid);

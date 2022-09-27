@@ -17,7 +17,7 @@ public class NinjaKit extends AbstractKit implements ISingleCooldown {
 
     private NinjaKit() {
         super("Ninja");
-        playerKitEvent(PlayerToggleSneakEvent.class, (event, kitPlayer) -> {
+        onKitPlayerEvent(PlayerToggleSneakEvent.class, (event, kitPlayer) -> {
             if (event.isSneaking() && kitPlayer.getLatestTarget().getLeft() != null) {
                 if (kitPlayer.getLatestTarget().getRight() + lastHitExpiration * 1000L > System.currentTimeMillis()) {
                     Player player = event.getPlayer();

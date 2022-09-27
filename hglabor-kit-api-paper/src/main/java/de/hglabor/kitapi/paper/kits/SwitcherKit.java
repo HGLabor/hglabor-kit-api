@@ -28,7 +28,7 @@ public class SwitcherKit extends AbstractKit implements ISingleCooldown, ISingle
         onKitItemRightClick((event, kitPlayer) -> {
             event.getPlayer().launchProjectile(Snowball.class).setMetadata(MARKER, new FixedMetadataValue(KitApi.getPlugin(), null));
         });
-        playerKitEvent(ProjectileHitEvent.class, EventUtils::getShooter, (event, kitPlayer) -> {
+        onKitPlayerEvent(ProjectileHitEvent.class, EventUtils::getShooter, (event, kitPlayer) -> {
             if (event.getHitEntity() != null && event.getEntity().hasMetadata(MARKER)) {
                 Entity hitEntity = event.getHitEntity();
                 Player shooter = kitPlayer.getPlayer().orElseThrow();

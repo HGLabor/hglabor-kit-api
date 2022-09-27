@@ -19,7 +19,7 @@ public class SnailKit extends AbstractKit {
         effectDuration = 4;
         effectMultiplier = 0;
         effectType = PotionEffectType.SLOW;
-        playerKitEvent(EntityDamageByEntityEvent.class, EventUtils::getAttacker, (event, kitPlayer) -> {
+        onKitPlayerAttacksEntity((event, kitPlayer) -> {
             if (event.getEntity() instanceof LivingEntity livingEntity && ChanceUtils.roll(likelihood)) {
                 livingEntity.addPotionEffect(new PotionEffect(effectType, effectDuration * 20, effectMultiplier, true, true));
             }

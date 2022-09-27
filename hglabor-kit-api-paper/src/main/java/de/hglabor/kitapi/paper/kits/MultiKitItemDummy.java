@@ -4,7 +4,9 @@ import de.hglabor.kitapi.kit.AbstractKit;
 import de.hglabor.kitapi.kit.cooldown.IMultiCooldown;
 import de.hglabor.kitapi.kit.item.IMultiKitItem;
 import de.hglabor.kitapi.kit.item.KitItemBuilder;
+import de.hglabor.kitapi.kit.player.IKitPlayer;
 import org.bukkit.Material;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
@@ -19,17 +21,13 @@ public class MultiKitItemDummy extends AbstractKit implements IMultiKitItem, IMu
 
     protected MultiKitItemDummy() {
         super("MultiKitDummy");
-        onKitItemRightClick((event, kitPlayer) -> {
-            event.getPlayer().sendMessage("RightClicked " + event.getItem().getType());
-            kitPlayer.addCooldown(this, "Iron");
-        }, KIT_ITEM, "Iron");
-        onKitItemRightClick((event, kitPlayer) -> {
-            event.getPlayer().sendMessage("RightClicked " + event.getItem().getType());
-            kitPlayer.addCooldown(this, "Gold");
-        }, KIT_ITEM_2, "Gold");
-        onKitItemLeftClick((event, kitPlayer) -> {
-            event.getPlayer().sendMessage("LeftClicked " + event.getItem().getType());
-        }, KIT_ITEM);
+        onKitItemLeftClickAtEntity(this::test, KIT_ITEM);
+    }
+
+    public void test(EntityDamageByEntityEvent event, IKitPlayer kitPlayer) {
+        event.getEntity().setGlowing(!event.getEntity().isGlowing());
+        event.getEntity().setGravity(false);
+        event.getEntity().addPassenger(kitPlayer.getPlayer().orElseThrow());
     }
 
     @Override

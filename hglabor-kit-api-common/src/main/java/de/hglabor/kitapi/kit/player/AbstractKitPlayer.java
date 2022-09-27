@@ -4,17 +4,17 @@ import de.hglabor.kitapi.kit.cooldown.IMultiCooldown;
 import de.hglabor.kitapi.kit.cooldown.ISingleCooldown;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.entity.Entity;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public abstract class AbstractKitPlayer<T> implements IKitPlayer {
+public abstract class AbstractKitPlayer implements IKitPlayer {
     protected final UUID uuid;
     protected final Map<ISingleCooldown, Long> singleCooldowns = new HashMap<>();
     protected final Map<IMultiCooldown, Map<String, Long>> multiCooldowns = new HashMap<>();
+    protected final Map<String, Object> kitAttributes = new HashMap<>();
     protected Pair<Entity, Long> latestTarget = Pair.of(null, 0L);
 
     protected AbstractKitPlayer(UUID uuid) {
@@ -54,5 +54,21 @@ public abstract class AbstractKitPlayer<T> implements IKitPlayer {
     @Override
     public void setLatestTarget(Entity entity) {
         this.latestTarget = Pair.of(entity, System.currentTimeMillis());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T getKitAttribute(String key) {
+        return (T) kitAttributes.get(key);
+    }
+
+    @Override
+    public <T> T getKitAttributeOrDefault(String key, T defaultValue) {
+        return getKitAttribute(key) == null ? defaultValue : getKitAttribute(key);
+    }
+
+    @Override
+    public <T> void putKitAttribute(String key, T value) {
+        kitAttributes.put(key, value);
     }
 }
