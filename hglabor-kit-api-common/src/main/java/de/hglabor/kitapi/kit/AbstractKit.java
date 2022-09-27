@@ -22,9 +22,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
 import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -147,19 +145,7 @@ public abstract class AbstractKit implements Listener {
             }
         }, KitApi.getPlugin());
     }
-
-    public final void clickKitItemEvent(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer) {
-        playerKitEvent(PlayerInteractEvent.class, consumer, false, playerInteractEvent -> (true), "", true);
-    }
-
-    public final void clickKitItemEvent(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer, Function<PlayerInteractEvent, Boolean> sendCooldownMessage) {
-        playerKitEvent(PlayerInteractEvent.class, consumer, false, sendCooldownMessage, "", true);
-    }
-
-    public final void clickEntityWithKitItemEvent(BiConsumer<PlayerInteractEntityEvent, IKitPlayer> consumer) {
-        playerKitEvent(PlayerInteractEntityEvent.class, consumer, false, playerInteractEvent -> (true), "", true);
-    }
-
+    
     @SuppressWarnings("unchecked")
     public final <T extends Event> void playerKitEvent(Class<T> clazz, Function<T, Player> playerGetter, BiConsumer<T, IKitPlayer> consumer, boolean ignoreCooldown, Function<T, Boolean> sendCooldownMessage, String cooldownKey, boolean withKitItem) {
         Bukkit.getPluginManager().registerEvent(clazz, this, EventPriority.NORMAL, (listener, event) -> {
