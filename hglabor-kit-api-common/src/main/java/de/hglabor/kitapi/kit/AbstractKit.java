@@ -15,6 +15,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -77,6 +78,18 @@ public abstract class AbstractKit implements Listener {
         }, KitApi.getPlugin());
     }
 
+    @SuppressWarnings("unchecked")
+    public final <T extends PlayerEvent> void onPlayerEvent(Class<T> clazz, BiConsumer<T, IKitPlayer> consumer) {
+        Bukkit.getPluginManager().registerEvent(clazz, this, EventPriority.NORMAL, (listener, event) -> {
+            try {
+                if (isEnabled()) {
+                    consumer.accept((T) event, KitApi.getKitPlayer(((PlayerEvent) event).getPlayer().getUniqueId()));
+                }
+            } catch (ClassCastException ignored) {
+            }
+        }, KitApi.getPlugin());
+    }
+
     public final void onKitPlayerAttacksEntity(BiConsumer<EntityDamageByEntityEvent, IKitPlayer> consumer) {
         onKitPlayerEvent(EntityDamageByEntityEvent.class, EventUtils::getAttacker, consumer, false, t -> true, "", false, null);
     }
@@ -107,6 +120,14 @@ public abstract class AbstractKit implements Listener {
 
     public final <T extends Event> void onKitPlayerEvent(Class<T> clazz, Function<T, Player> playerGetter, BiConsumer<T, IKitPlayer> consumer) {
         onKitPlayerEvent(clazz, playerGetter, consumer, false, t -> true, "", false, null);
+    }
+
+    public final void onKitItemBreaksBlock(BiConsumer<BlockBreakEvent, IKitPlayer> consumer) {
+        onKitPlayerEvent(BlockBreakEvent.class, EventUtils::getPlayer, consumer, false, t -> true, "", true, null);
+    }
+
+    public final void onKitItemBreaksBlock(BiConsumer<BlockBreakEvent, IKitPlayer> consumer, ItemStack itemStack) {
+        onKitPlayerEvent(BlockBreakEvent.class, EventUtils::getPlayer, consumer, false, t -> true, "", true, itemStack);
     }
 
     public final void onKitItemPlace(BiConsumer<BlockPlaceEvent, IKitPlayer> consumer) {

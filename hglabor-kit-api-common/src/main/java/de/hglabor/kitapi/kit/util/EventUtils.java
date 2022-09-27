@@ -2,6 +2,7 @@ package de.hglabor.kitapi.kit.util;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryInteractEvent;
@@ -29,6 +30,8 @@ public final class EventUtils {
             return (Player) interactEvent.getWhoClicked();
         } else if (event instanceof BlockPlaceEvent blockPlaceEvent) {
             return blockPlaceEvent.getPlayer();
+        } else if (event instanceof BlockBreakEvent blockBreakEvent) {
+            return blockBreakEvent.getPlayer();
         }
         return null;
     }

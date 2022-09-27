@@ -2,6 +2,7 @@ package de.hglabor.kitapi.kit.item;
 
 
 import de.hglabor.kitapi.KitApi;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -28,6 +29,13 @@ public class KitItemBuilder {
 
     public KitItemBuilder makeDroppable() {
         this.itemStack.getItemMeta().getPersistentDataContainer().remove(UNDROPPABLE);
+        return this;
+    }
+
+    public KitItemBuilder withName(Component name) {
+        ItemMeta itemMeta = this.itemStack.getItemMeta();
+        itemMeta.displayName(name);
+        this.itemStack.setItemMeta(itemMeta);
         return this;
     }
 

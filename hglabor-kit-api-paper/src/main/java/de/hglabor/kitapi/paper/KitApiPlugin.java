@@ -38,6 +38,8 @@ public final class KitApiPlugin extends JavaPlugin implements Listener {
         KitApi.register(MultiKitItemDummy.INSTANCE);
         KitApi.register(SoulstealerKit.INSTANCE);
         KitApi.register(new DiggerKit());
+        KitApi.register(new LumberjackKit());
+        KitApi.register(new KayaKit());
         Bukkit.getPluginManager().registerEvents(this, this);
         KitSettingsCommand.register(((CraftServer) Bukkit.getServer()).getServer().vanillaCommandDispatcher.getDispatcher());
     }
