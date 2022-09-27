@@ -100,7 +100,7 @@ public class KitSettingsCommand {
             }
             return builder.buildFuture();
         }),
-        POTION_EFFECT_TYPE(PotionEffectType.class, StringArgumentType.string(), s -> { return PotionEffectType.getByName(s); }, (context, builder) -> {
+        POTION_EFFECT_TYPE(PotionEffectType.class, StringArgumentType.string(), PotionEffectType::getByName, (context, builder) -> {
             for (PotionEffectType value : PotionEffectType.values()) {
                 builder.suggest(value.getName());
             }

@@ -145,7 +145,7 @@ public abstract class AbstractKit implements Listener {
             }
         }, KitApi.getPlugin());
     }
-    
+
     @SuppressWarnings("unchecked")
     public final <T extends Event> void playerKitEvent(Class<T> clazz, Function<T, Player> playerGetter, BiConsumer<T, IKitPlayer> consumer, boolean ignoreCooldown, Function<T, Boolean> sendCooldownMessage, String cooldownKey, boolean withKitItem) {
         Bukkit.getPluginManager().registerEvent(clazz, this, EventPriority.NORMAL, (listener, event) -> {
