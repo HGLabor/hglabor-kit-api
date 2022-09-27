@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -23,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -89,19 +91,33 @@ public abstract class AbstractKit implements Listener {
     }
 
     public final void onKitItemRightClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer) {
-        onKitItemRightClick(consumer, false, event -> true, "", null);
+        onKitItemClick(consumer, false, event -> true, "", null, Action::isRightClick);
     }
 
     public final void onKitItemRightClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer, ItemStack itemStack) {
-        System.out.println("###ItemStack " + itemStack);
-        onKitItemRightClick(consumer, false, event -> true, "", itemStack);
+        onKitItemClick(consumer, false, event -> true, "", itemStack, Action::isRightClick);
     }
 
-    public final void onKitItemRightClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer, boolean ignoreCooldown, Function<PlayerInteractEvent, Boolean> sendCooldownMessage, String cooldownKey, ItemStack kitItem) {
+    public final void onKitItemRightClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer, ItemStack itemStack, String cooldownKey) {
+        onKitItemClick(consumer, false, event -> true, cooldownKey, itemStack, Action::isRightClick);
+    }
+
+    public final void onKitItemLeftClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer) {
+        onKitItemClick(consumer, false, event -> true, "", null, Action::isLeftClick);
+    }
+
+    public final void onKitItemLeftClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer, ItemStack itemStack) {
+        onKitItemClick(consumer, false, event -> true, "", itemStack, Action::isLeftClick);
+    }
+
+    public final void onKitItemLeftClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer, ItemStack itemStack, String cooldownKey) {
+        onKitItemClick(consumer, false, event -> true, cooldownKey, itemStack, Action::isLeftClick);
+    }
+
+    public final void onKitItemClick(BiConsumer<PlayerInteractEvent, IKitPlayer> consumer, boolean ignoreCooldown, Function<PlayerInteractEvent, Boolean> sendCooldownMessage, String cooldownKey, ItemStack kitItem, Function<Action, Boolean> actionGetter) {
         Bukkit.getPluginManager().registerEvent(PlayerInteractEvent.class, this, EventPriority.NORMAL, (listener, event) -> {
             try {
-                if (((PlayerInteractEvent) event).getAction().isRightClick()) {
-                    System.out.println(listener);
+                if (actionGetter.apply(((PlayerInteractEvent) event).getAction())) {
                     ((PlayerInteractEvent) event).setCancelled(true);
                     handlePlayerEvent(consumer, event, ((PlayerInteractEvent) event).getPlayer(), ignoreCooldown, sendCooldownMessage, cooldownKey, true, kitItem);
                 }
@@ -111,14 +127,22 @@ public abstract class AbstractKit implements Listener {
     }
 
     public final void onKitItemRightClickAtEntity(BiConsumer<PlayerInteractEntityEvent, IKitPlayer> consumer) {
-        onKitItemRightClickAtEntity(consumer, false, event -> true, "");
+        onKitItemRightClickAtEntity(consumer, false, event -> true, "", null);
     }
 
-    public final void onKitItemRightClickAtEntity(BiConsumer<PlayerInteractEntityEvent, IKitPlayer> consumer, boolean ignoreCooldown, Function<PlayerInteractEntityEvent, Boolean> sendCooldownMessage, String cooldownKey) {
+    public final void onKitItemRightClickAtEntity(BiConsumer<PlayerInteractEntityEvent, IKitPlayer> consumer, ItemStack itemStack) {
+        onKitItemRightClickAtEntity(consumer, false, event -> true, "", itemStack);
+    }
+
+    public final void onKitItemRightClickAtEntity(BiConsumer<PlayerInteractEntityEvent, IKitPlayer> consumer, ItemStack itemStack, String cooldownKey) {
+        onKitItemRightClickAtEntity(consumer, false, event -> true, cooldownKey, itemStack);
+    }
+
+    public final void onKitItemRightClickAtEntity(BiConsumer<PlayerInteractEntityEvent, IKitPlayer> consumer, boolean ignoreCooldown, Function<PlayerInteractEntityEvent, Boolean> sendCooldownMessage, String cooldownKey, ItemStack itemStack) {
         Bukkit.getPluginManager().registerEvent(PlayerInteractEntityEvent.class, this, EventPriority.NORMAL, (listener, event) -> {
             try {
                 ((PlayerInteractEntityEvent) event).setCancelled(true);
-                handlePlayerEvent(consumer, event, ((PlayerInteractEntityEvent) event).getPlayer(), ignoreCooldown, sendCooldownMessage, cooldownKey, true, null);
+                handlePlayerEvent(consumer, event, ((PlayerInteractEntityEvent) event).getPlayer(), ignoreCooldown, sendCooldownMessage, cooldownKey, true, itemStack);
             } catch (ClassCastException ignored) {
             }
         }, KitApi.getPlugin());
@@ -174,8 +198,6 @@ public abstract class AbstractKit implements Listener {
                 if (!itemInMainHand.isSimilar(singleKitItem.getKitItem())) return;
                 //TODO maybe brauchen wir eine eigene methode anstatt isSimilar
             } else if (kitItemSupplier instanceof IMultiKitItem multiKitItem) {
-                //Bukkit.broadcastMessage(this.getName());
-                //Bukkit.broadcastMessage(kitItem != null ? kitItem.toString() : "null");
                 if (!itemInMainHand.isSimilar(kitItem)) return;
             }
         }
@@ -203,8 +225,5 @@ public abstract class AbstractKit implements Listener {
             }
         }
         consumer.accept((T) event, kitPlayer);
-    }
-
-    private record ListenerWrapper(UUID uuid) implements Listener {
     }
 }

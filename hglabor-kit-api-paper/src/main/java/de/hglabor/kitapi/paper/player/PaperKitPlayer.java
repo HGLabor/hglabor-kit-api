@@ -7,6 +7,7 @@ import de.hglabor.kitapi.kit.player.AbstractKitPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,7 +41,11 @@ public class PaperKitPlayer extends AbstractKitPlayer<Player> {
     @Override
     public void sendCooldownInfo(IMultiCooldown cooldown, String key) {
         getPlayer().ifPresent(player -> {
-            //player.sendMessage(new TextComponent("Cooldown"), Util.NIL_UUID);
+            long endTime = multiCooldowns.getOrDefault(cooldown, new HashMap<>()).getOrDefault(key, 0L);
+            if (endTime > 0) {
+                long remainingTime = endTime - System.currentTimeMillis();
+                player.sendMessage("Cooldown for Key " + key + " " + remainingTime);
+            }
         });
     }
 }

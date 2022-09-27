@@ -32,12 +32,13 @@ public abstract class AbstractKitPlayer<T> implements IKitPlayer {
     }
 
     @Override
-    public final void addCooldown(IMultiCooldown cooldown) {
+    public final void addCooldown(IMultiCooldown cooldown, String key) {
+        multiCooldowns.computeIfAbsent(cooldown, x -> new HashMap<>()).put(key, System.currentTimeMillis() + (long) (cooldown.getCooldowns().getOrDefault(key, 0f) * 1000L));
     }
 
     @Override
     public final boolean hasCooldown(IMultiCooldown cooldown, String key) {
-        return false;
+        return System.currentTimeMillis() < multiCooldowns.getOrDefault(cooldown, new HashMap<>()).getOrDefault(key, 0L);
     }
 
     @Override

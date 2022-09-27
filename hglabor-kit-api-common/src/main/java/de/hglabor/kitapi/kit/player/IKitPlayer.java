@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface IKitPlayer {
     void addCooldown(ISingleCooldown cooldown);
 
-    void addCooldown(IMultiCooldown cooldown);
+    void addCooldown(IMultiCooldown cooldown, String key);
 
     boolean hasCooldown(ISingleCooldown cooldown);
 
