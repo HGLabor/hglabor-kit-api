@@ -8,11 +8,10 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 
 public class ThorKit extends AbstractKit {
-    public static final ThorKit INSTANCE = new ThorKit();
     private static final ItemStack KIT_ITEM = new KitItemBuilder(Material.WOODEN_AXE).makeUnbreakable().build();
     public float cooldown = 5f;
 
-    private ThorKit() {
+    public ThorKit() {
         super("Thor");
         onKitItemRightClick((event, kitPlayer) -> {
             event.getPlayer().getWorld().strikeLightningEffect(event.getPlayer().getLocation());

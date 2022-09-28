@@ -8,13 +8,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 public class NinjaKit extends AbstractKit {
-    public static final NinjaKit INSTANCE = new NinjaKit();
     private final long lastHitExpiration = 15L;
     private final double radius = 30D;
     private final Material material = Material.ANDESITE_SLAB;
     private float cooldown = 4f;
 
-    private NinjaKit() {
+    public NinjaKit() {
         super("Ninja");
         onKitPlayerEvent(PlayerToggleSneakEvent.class, (event, kitPlayer) -> {
             if (event.isSneaking() && kitPlayer.getLatestTarget().getLeft() != null) {

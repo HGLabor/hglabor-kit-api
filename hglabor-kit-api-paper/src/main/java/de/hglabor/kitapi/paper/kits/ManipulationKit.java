@@ -9,10 +9,9 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 
 public class ManipulationKit extends AbstractKit {
-    public static final ManipulationKit INSTANCE = new ManipulationKit();
     private static final ItemStack KIT_ITEM = new KitItemBuilder(Material.IRON_NUGGET).build();
 
-    private ManipulationKit() {
+    public ManipulationKit() {
         super("Manipulation");
         onKitItemRightClickAtEntity((event, kitPlayer) -> {
             if (event.getRightClicked() instanceof Mob mob) {

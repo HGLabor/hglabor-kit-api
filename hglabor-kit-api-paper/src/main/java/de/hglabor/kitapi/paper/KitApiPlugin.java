@@ -29,12 +29,6 @@ public final class KitApiPlugin extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         KitApi.init(uuid -> PLAYER_REGISTRY.computeIfAbsent(uuid, PaperKitPlayer::new), this);
-        KitApi.register(ThorKit.INSTANCE);
-        KitApi.register(NinjaKit.INSTANCE);
-        KitApi.register(SnailKit.INSTANCE);
-        KitApi.register(ManipulationKit.INSTANCE);
-        KitApi.register(MultiKitItemDummy.INSTANCE);
-        KitApi.register(SoulstealerKit.INSTANCE);
         KitApi.register(new DiggerKit());
         KitApi.register(new LumberjackKit());
         KitApi.register(new KayaKit());
@@ -57,7 +51,7 @@ public final class KitApiPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        for (AbstractKit kit : KitApi.KIT_REGISTRY) {
+        for (AbstractKit kit : KitApi.getKits()) {
             event.getPlayer().getInventory().addItem(kit.getKitItems().toArray(new ItemStack[0]));
         }
     }

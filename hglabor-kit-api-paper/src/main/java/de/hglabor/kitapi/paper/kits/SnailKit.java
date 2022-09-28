@@ -7,11 +7,10 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public class SnailKit extends AbstractKit {
-    public final static SnailKit INSTANCE = new SnailKit();
     private final int likelihood, effectDuration, effectMultiplier;
     private final PotionEffectType effectType;
 
-    private SnailKit() {
+    public SnailKit() {
         super("Snail");
         likelihood = 25;
         effectDuration = 4;

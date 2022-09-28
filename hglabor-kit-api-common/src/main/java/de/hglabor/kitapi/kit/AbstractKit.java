@@ -36,7 +36,7 @@ public abstract class AbstractKit implements Listener {
     private final String name;
     private boolean isEnabled = true;
 
-    protected AbstractKit(String name) {
+    public AbstractKit(String name) {
         this.name = name;
     }
 

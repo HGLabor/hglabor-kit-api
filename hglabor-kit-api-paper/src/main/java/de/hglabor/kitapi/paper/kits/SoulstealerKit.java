@@ -5,9 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 public class SoulstealerKit extends AbstractKit {
-    public static final SoulstealerKit INSTANCE = new SoulstealerKit();
-
-    private SoulstealerKit() {
+    public SoulstealerKit() {
         super("Soulstealer");
         onKitPlayerEvent(PlayerDeathEvent.class, (playerDeathEvent, kitPlayer) -> {
             if (kitPlayer.getKitAttributeOrDefault("death", 0) >= 3) return;

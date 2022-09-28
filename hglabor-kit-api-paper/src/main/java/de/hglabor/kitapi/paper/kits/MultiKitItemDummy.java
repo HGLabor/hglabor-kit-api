@@ -12,12 +12,11 @@ import java.util.List;
 public class MultiKitItemDummy extends AbstractKit {
     private static final ItemStack KIT_ITEM = new KitItemBuilder(Material.IRON_INGOT).makeUnbreakable().build();
     private static final ItemStack KIT_ITEM_2 = new KitItemBuilder(Material.GOLD_INGOT).makeUnbreakable().build();
-    public static final MultiKitItemDummy INSTANCE = new MultiKitItemDummy();
     private float goldCooldown = 5f;
     private float ironCooldown = 5f;
     private float cooldown = 5f;
 
-    protected MultiKitItemDummy() {
+    public MultiKitItemDummy() {
         super("MultiKitDummy");
         onKitItemLeftClick((event, kitPlayer) -> {
             kitPlayer.sendMessage("LeftClicked " + event.getItem().getType());

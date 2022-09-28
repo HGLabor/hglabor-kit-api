@@ -24,7 +24,7 @@ public class KitSettingsCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> kitsettings = literal("kitsettings");
 
-        for (AbstractKit abstractKit : KitApi.KIT_REGISTRY) {
+        for (AbstractKit abstractKit : KitApi.getKits()) {
             LiteralArgumentBuilder<CommandSourceStack> kitNameLiteral = literal(abstractKit.getName());
 
             for (Field declaredField : abstractKit.getClass().getDeclaredFields()) {
