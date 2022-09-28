@@ -1,7 +1,6 @@
 package de.hglabor.kitapi.paper.kits;
 
 import de.hglabor.kitapi.kit.AbstractKit;
-import de.hglabor.kitapi.kit.item.IMultiKitItem;
 import de.hglabor.kitapi.kit.item.KitItemBuilder;
 import de.hglabor.kitapi.kit.player.IKitPlayer;
 import org.bukkit.Material;
@@ -10,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
-public class MultiKitItemDummy extends AbstractKit implements IMultiKitItem {
+public class MultiKitItemDummy extends AbstractKit {
     private static final ItemStack KIT_ITEM = new KitItemBuilder(Material.IRON_INGOT).makeUnbreakable().build();
     private static final ItemStack KIT_ITEM_2 = new KitItemBuilder(Material.GOLD_INGOT).makeUnbreakable().build();
     public static final MultiKitItemDummy INSTANCE = new MultiKitItemDummy();
@@ -21,9 +20,15 @@ public class MultiKitItemDummy extends AbstractKit implements IMultiKitItem {
     protected MultiKitItemDummy() {
         super("MultiKitDummy");
         onKitItemLeftClick((event, kitPlayer) -> {
-            this.applyCooldown(kitPlayer, cooldown);
+            kitPlayer.sendMessage("LeftClicked " + event.getItem().getType());
+            applyCooldown(kitPlayer, cooldown, "LeftClick");
+        }, KIT_ITEM, "LeftClick");
+        onKitItemRightClick((event, kitPlayer) -> {
+            kitPlayer.sendMessage("RightClicked " + event.getItem().getType());
         }, KIT_ITEM);
-        onKitItemLeftClickAtEntity(this::test, KIT_ITEM);
+        onKitItemLeftClick((event, kitPlayer) -> {
+            kitPlayer.sendMessage("Clicked " + event.getItem().getType());
+        }, KIT_ITEM_2);
     }
 
     public void test(EntityDamageByEntityEvent event, IKitPlayer kitPlayer) {

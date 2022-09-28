@@ -1,6 +1,7 @@
 package de.hglabor.kitapi.kit.player;
 
 import de.hglabor.kitapi.kit.AbstractKit;
+import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -35,8 +36,14 @@ public interface IKitPlayer {
     void addCooldown(AbstractKit abstractKit, float amount, String action);
 
     default boolean hasCooldown(AbstractKit abstractKit) {
-       return hasCooldown(abstractKit, AbstractKit.DEFAULT_COOLDOWN_KEY);
+        return hasCooldown(abstractKit, AbstractKit.DEFAULT_COOLDOWN_KEY);
     }
 
     boolean hasCooldown(AbstractKit abstractKit, String action);
+
+    void sendMessage(Component component);
+
+    default void sendMessage(String text) {
+        sendMessage(Component.text(text));
+    }
 }

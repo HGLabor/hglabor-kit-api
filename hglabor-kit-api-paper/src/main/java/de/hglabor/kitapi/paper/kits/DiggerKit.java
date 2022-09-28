@@ -1,14 +1,18 @@
 package de.hglabor.kitapi.paper.kits;
 
 import de.hglabor.kitapi.kit.AbstractKit;
-import de.hglabor.kitapi.kit.item.ISingleKitItem;
+import de.hglabor.kitapi.kit.event.BlockSetToAirEvent;
 import de.hglabor.kitapi.kit.item.KitItemBuilder;
+import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
+import org.bukkit.craftbukkit.v1_18_R1.block.CraftBlock;
 import org.bukkit.inventory.ItemStack;
 
-public class DiggerKit extends AbstractKit implements ISingleKitItem {
+import java.util.List;
+
+public class DiggerKit extends AbstractKit {
     private int radius = 6;
     private float cooldown = 12f;
     private int maxUsage = 3;
@@ -27,13 +31,15 @@ public class DiggerKit extends AbstractKit implements ISingleKitItem {
                             if (block.getY() + y <= 0) {
                                 continue;
                             }
-                            Block b = block.getWorld().getBlockAt(block.getX() + x, block.getY() + y, block.getZ() + z);
-                            if (!b.getType().equals(Material.BEDROCK)) {
-                                if (b instanceof Container) {
-                                    b.breakNaturally();
+                            Block toBreak = block.getWorld().getBlockAt(block.getX() + x, block.getY() + y, block.getZ() + z);
+                            if (!toBreak.getType().equals(Material.BEDROCK)) {
+                                toBreak.getWorld().playEffect(toBreak.getLocation(), Effect.STEP_SOUND, net.minecraft.world.level.block.Block.getId(((CraftBlock) toBreak).getNMS()));
+                                if (toBreak instanceof Container) {
+                                    toBreak.breakNaturally();
                                 } else {
-                                    b.setType(Material.AIR);
+                                    toBreak.setType(Material.AIR);
                                 }
+                                callEvent(new BlockSetToAirEvent(toBreak));
                             }
                         }
                     }
@@ -43,7 +49,7 @@ public class DiggerKit extends AbstractKit implements ISingleKitItem {
     }
 
     @Override
-    public ItemStack getKitItem() {
-        return new KitItemBuilder(Material.DRAGON_EGG).withAmount(16).build();
+    public List<ItemStack> getKitItems() {
+        return List.of(new KitItemBuilder(Material.DRAGON_EGG).withAmount(16).build());
     }
 }

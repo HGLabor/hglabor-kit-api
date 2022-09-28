@@ -1,6 +1,7 @@
 package de.hglabor.kitapi.kit.player;
 
 import de.hglabor.kitapi.kit.AbstractKit;
+import net.kyori.adventure.text.Component;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.Nullable;
@@ -57,5 +58,10 @@ public abstract class AbstractKitPlayer implements IKitPlayer {
     @Override
     public <T> void putKitAttribute(String key, T value) {
         kitAttributes.put(key, value);
+    }
+
+    @Override
+    public void sendMessage(Component component) {
+        getPlayer().ifPresent(player -> player.sendMessage(component));
     }
 }

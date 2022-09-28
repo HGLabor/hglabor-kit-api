@@ -2,7 +2,6 @@ package de.hglabor.kitapi.paper.kits;
 
 import de.hglabor.kitapi.KitApi;
 import de.hglabor.kitapi.kit.AbstractKit;
-import de.hglabor.kitapi.kit.item.ISingleKitItem;
 import de.hglabor.kitapi.kit.item.KitItemBuilder;
 import de.hglabor.kitapi.kit.util.EventUtils;
 import org.bukkit.Location;
@@ -15,7 +14,9 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
-public class SwitcherKit extends AbstractKit implements ISingleKitItem {
+import java.util.List;
+
+public class SwitcherKit extends AbstractKit {
     public final static SwitcherKit INSTANCE = new SwitcherKit();
     private static final ItemStack KIT_ITEM = new KitItemBuilder(Material.SNOWBALL).withAmount(16).build();
     private final String MARKER = "switcher-projectile";
@@ -41,7 +42,7 @@ public class SwitcherKit extends AbstractKit implements ISingleKitItem {
     }
 
     @Override
-    public ItemStack getKitItem() {
-        return KIT_ITEM;
+    public List<ItemStack> getKitItems() {
+        return List.of(KIT_ITEM);
     }
 }

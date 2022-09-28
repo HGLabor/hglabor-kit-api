@@ -1,9 +1,6 @@
 package de.hglabor.kitapi.kit;
 
 import de.hglabor.kitapi.KitApi;
-import de.hglabor.kitapi.kit.item.IKitItemSupplier;
-import de.hglabor.kitapi.kit.item.IMultiKitItem;
-import de.hglabor.kitapi.kit.item.ISingleKitItem;
 import de.hglabor.kitapi.kit.player.IKitPlayer;
 import de.hglabor.kitapi.kit.util.EventUtils;
 import org.bukkit.Bukkit;
@@ -25,7 +22,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -67,6 +66,10 @@ public abstract class AbstractKit implements Listener {
     public void onDeactivation(IKitPlayer kitPlayer) {
     }
 
+    public List<ItemStack> getKitItems() {
+        return Collections.emptyList();
+    }
+
     public final void applyCooldown(IKitPlayer kitPlayer, float amount) {
         applyCooldown(kitPlayer, amount, Integer.MIN_VALUE, DEFAULT_COOLDOWN_KEY);
     }
@@ -81,14 +84,18 @@ public abstract class AbstractKit implements Listener {
 
     @SuppressWarnings("unchecked")
     public final void applyCooldown(IKitPlayer kitPlayer, float amount, int maxUses, String action) {
-        String key = this.getName() + "kitUsages";
-        if (kitPlayer.getKitAttribute(key) == null) {
-            kitPlayer.putKitAttribute(key, new HashMap<>());
-        }
-        AtomicInteger kitUses = ((Map<String, AtomicInteger>) kitPlayer.getKitAttribute(key)).computeIfAbsent(action, s -> new AtomicInteger(1));
-        if (kitUses.getAndIncrement() >= maxUses) {
+        if (maxUses <= 0) {
             kitPlayer.addCooldown(this, amount, action);
-            kitUses.set(1);
+        } else {
+            String key = this.getName() + "kitUsages";
+            if (kitPlayer.getKitAttribute(key) == null) {
+                kitPlayer.putKitAttribute(key, new HashMap<>());
+            }
+            AtomicInteger kitUses = ((Map<String, AtomicInteger>) kitPlayer.getKitAttribute(key)).computeIfAbsent(action, s -> new AtomicInteger(1));
+            if (kitUses.getAndIncrement() >= maxUses) {
+                kitPlayer.addCooldown(this, amount, action);
+                kitUses.set(1);
+            }
         }
     }
 
@@ -114,6 +121,10 @@ public abstract class AbstractKit implements Listener {
             } catch (ClassCastException ignored) {
             }
         }, KitApi.getPlugin());
+    }
+
+    public final void onKitPlayerGetsAttackedByEntity(BiConsumer<EntityDamageByEntityEvent, IKitPlayer> consumer) {
+        onKitPlayerEvent(EntityDamageByEntityEvent.class, EventUtils::getTarget, consumer, false, t -> true, DEFAULT_COOLDOWN_KEY, false, null);
     }
 
     public final void onKitPlayerAttacksEntity(BiConsumer<EntityDamageByEntityEvent, IKitPlayer> consumer) {
@@ -271,7 +282,7 @@ public abstract class AbstractKit implements Listener {
         IKitPlayer kitPlayer = KitApi.getKitPlayer(player.getUniqueId());
         if (!isEnabled()) return;
         if (!kitPlayer.hasKit(this)) return;
-        if (withKitItem && this instanceof IKitItemSupplier<?> kitItemSupplier) {
+        if (withKitItem) {
             EquipmentSlot hand = EquipmentSlot.HAND;
             if (event instanceof PlayerInteractEvent interactEvent) {
                 hand = interactEvent.getHand() != null ? interactEvent.getHand() : EquipmentSlot.HAND;
@@ -282,12 +293,8 @@ public abstract class AbstractKit implements Listener {
             }
 
             ItemStack itemInMainHand = player.getInventory().getItem(hand);
-            if (kitItemSupplier instanceof ISingleKitItem singleKitItem) {
-                if (!itemInMainHand.isSimilar(singleKitItem.getKitItem())) return;
-                //TODO maybe brauchen wir eine eigene methode anstatt isSimilar
-            } else if (kitItemSupplier instanceof IMultiKitItem multiKitItem) {
-                if (!itemInMainHand.isSimilar(kitItem)) return;
-            }
+            kitItem = kitItem == null ? getKitItems().stream().findFirst().orElse(null) : kitItem;
+            if (!itemInMainHand.isSimilar(kitItem)) return;
         }
         if (!ignoreCooldown) {
             if (kitPlayer.hasCooldown(this, cooldownKey)) {
@@ -305,8 +312,12 @@ public abstract class AbstractKit implements Listener {
         consumer.accept((T) event, kitPlayer);
     }
 
-    public final BukkitTask runTaskLater(Runnable runnable, long delay) {
+    protected final BukkitTask runTaskLater(Runnable runnable, long delay) {
         return Bukkit.getScheduler().runTaskLater(KitApi.getPlugin(), runnable, delay);
+    }
+
+    protected final void callEvent(Event event) {
+        Bukkit.getPluginManager().callEvent(event);
     }
 
     private boolean isKitItem(ItemStack item, ItemStack kitItem) {

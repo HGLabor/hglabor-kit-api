@@ -2,8 +2,6 @@ package de.hglabor.kitapi.paper;
 
 import de.hglabor.kitapi.KitApi;
 import de.hglabor.kitapi.kit.AbstractKit;
-import de.hglabor.kitapi.kit.item.IMultiKitItem;
-import de.hglabor.kitapi.kit.item.ISingleKitItem;
 import de.hglabor.kitapi.kit.item.KitItemBuilder;
 import de.hglabor.kitapi.kit.player.IKitPlayer;
 import de.hglabor.kitapi.paper.command.KitSettingsCommand;
@@ -60,11 +58,7 @@ public final class KitApiPlugin extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         for (AbstractKit kit : KitApi.KIT_REGISTRY) {
-            if (kit instanceof ISingleKitItem singleKitItem) {
-                event.getPlayer().getInventory().addItem(singleKitItem.getKitItem());
-            } else if (kit instanceof IMultiKitItem multiKitItem) {
-                event.getPlayer().getInventory().addItem(multiKitItem.getKitItems().toArray(new ItemStack[0]));
-            }
+            event.getPlayer().getInventory().addItem(kit.getKitItems().toArray(new ItemStack[0]));
         }
     }
 }

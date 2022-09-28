@@ -1,13 +1,14 @@
 package de.hglabor.kitapi.paper.kits;
 
 import de.hglabor.kitapi.kit.AbstractKit;
-import de.hglabor.kitapi.kit.item.ISingleKitItem;
 import de.hglabor.kitapi.kit.item.KitItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.entity.Mob;
 import org.bukkit.inventory.ItemStack;
 
-public class ManipulationKit extends AbstractKit implements ISingleKitItem {
+import java.util.List;
+
+public class ManipulationKit extends AbstractKit {
     public static final ManipulationKit INSTANCE = new ManipulationKit();
     private static final ItemStack KIT_ITEM = new KitItemBuilder(Material.IRON_NUGGET).build();
 
@@ -22,7 +23,7 @@ public class ManipulationKit extends AbstractKit implements ISingleKitItem {
     }
 
     @Override
-    public ItemStack getKitItem() {
-        return KIT_ITEM;
+    public List<ItemStack> getKitItems() {
+        return List.of(KIT_ITEM);
     }
 }

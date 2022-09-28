@@ -2,7 +2,8 @@ package de.hglabor.kitapi.paper.kits;
 
 import de.hglabor.kitapi.KitApi;
 import de.hglabor.kitapi.kit.AbstractKit;
-import de.hglabor.kitapi.kit.item.ISingleKitItem;
+import de.hglabor.kitapi.kit.event.BlockChangedTypeEvent;
+import de.hglabor.kitapi.kit.event.BlockSetToAirEvent;
 import de.hglabor.kitapi.kit.item.KitItemBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -13,12 +14,15 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.metadata.FixedMetadataValue;
 
-public class KayaKit extends AbstractKit implements ISingleKitItem {
+import java.util.List;
+
+public class KayaKit extends AbstractKit {
     private static final ItemStack KIT_ITEM = new KitItemBuilder(Material.GRASS_BLOCK)
             .withName(Component.text("Kaya Block").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GREEN))
             .withAmount(16)
@@ -27,6 +31,12 @@ public class KayaKit extends AbstractKit implements ISingleKitItem {
 
     public KayaKit() {
         super("Kaya");
+        onEvent(BlockBreakEvent.class, blockBreakEvent -> {
+            blockBreakEvent.getBlock().removeMetadata(KAYA_KEY, KitApi.getPlugin());
+        });
+        onEvent(BlockChangedTypeEvent.class, event -> {
+            event.getBlock().removeMetadata(KAYA_KEY, KitApi.getPlugin());
+        });
         onKitItemPlace((blockPlaceEvent, kitPlayer) -> {
             blockPlaceEvent.getBlockPlaced().setMetadata(KAYA_KEY, new FixedMetadataValue(KitApi.getPlugin(), ""));
         });
@@ -37,8 +47,8 @@ public class KayaKit extends AbstractKit implements ISingleKitItem {
             if (kitPlayer.hasKit(this)) return;
             Block block = event.getTo().getBlock().getRelative(BlockFace.DOWN);
             if (block.hasMetadata(KAYA_KEY)) {
-                block.removeMetadata(KAYA_KEY, KitApi.getPlugin());
                 block.setType(Material.AIR);
+                callEvent(new BlockSetToAirEvent(block));
             }
         });
         registerRecipe();
@@ -52,7 +62,7 @@ public class KayaKit extends AbstractKit implements ISingleKitItem {
     }
 
     @Override
-    public ItemStack getKitItem() {
-        return KIT_ITEM;
+    public List<ItemStack> getKitItems() {
+        return List.of(KIT_ITEM);
     }
 }

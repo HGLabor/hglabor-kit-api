@@ -1,7 +1,6 @@
 package de.hglabor.kitapi.paper.kits;
 
 import de.hglabor.kitapi.kit.AbstractKit;
-import de.hglabor.kitapi.kit.item.ISingleKitItem;
 import de.hglabor.kitapi.kit.item.KitItemBuilder;
 import de.hglabor.kitapi.kit.player.IKitPlayer;
 import net.kyori.adventure.text.Component;
@@ -12,9 +11,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class LumberjackKit extends AbstractKit implements ISingleKitItem {
+public class LumberjackKit extends AbstractKit {
     private int maxLogs = 300;
 
     public LumberjackKit() {
@@ -43,7 +43,7 @@ public class LumberjackKit extends AbstractKit implements ISingleKitItem {
     }
 
     @Override
-    public ItemStack getKitItem() {
-        return new KitItemBuilder(Material.WOODEN_AXE).withName(Component.text("Lumberjack").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GREEN)).makeUnbreakable().build();
+    public List<ItemStack> getKitItems() {
+        return List.of(new KitItemBuilder(Material.WOODEN_AXE).withName(Component.text("Lumberjack").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GREEN)).makeUnbreakable().build());
     }
 }
