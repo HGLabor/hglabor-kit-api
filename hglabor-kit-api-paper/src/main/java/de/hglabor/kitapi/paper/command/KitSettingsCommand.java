@@ -47,7 +47,7 @@ public class KitSettingsCommand {
                 });
 
                 for (SupportedArgument argument : SupportedArgument.values()) {
-                    if (declaredField.getType().equals(argument.clazz) || Enum.class.isAssignableFrom(declaredField.getType())) {
+                    if (declaredField.getType().equals(argument.clazz) || argument.clazz.isAssignableFrom(declaredField.getType())) {
                         RequiredArgumentBuilder<CommandSourceStack, ?> argumentBuilder = argument("value", argument.argumentType).executes(context -> {
                             Object value;
                             if (argument.getter != null) {
@@ -65,8 +65,6 @@ public class KitSettingsCommand {
                             return 1;
                         });
                         if (argument.suggestionProvider != null) {
-                            System.out.println(declaredField.getType());
-                            System.out.println(Enum.class.isAssignableFrom(declaredField.getType()));
                             argumentBuilder.suggests(argument.suggestionProvider.apply(declaredField.getType()));
                         }
                         fieldLiteral.then(argumentBuilder);
@@ -98,17 +96,12 @@ public class KitSettingsCommand {
         @SuppressWarnings({"unchecked", "rawtypes"})
         ENUM(Enum.class, StringArgumentType.string(), (s, clazz) -> {
             return Enum.valueOf(((Class) clazz), s);
-        }, (clazz) -> {
-            System.out.println("###" + clazz);
-            return (context, builder) -> {
-                System.out.println("Ja grüß dich");
-                EnumSet<? extends Enum<?>> values = EnumSet.allOf((Class) clazz);
-                for (Enum<? extends Enum<?>> entry : values) {
-                    System.out.println("###" + entry.name());
-                    builder.suggest(entry.name());
-                }
-                return builder.buildFuture();
-            };
+        }, (clazz) -> (context, builder) -> {
+            EnumSet<? extends Enum<?>> values = EnumSet.allOf((Class) clazz);
+            for (Enum<? extends Enum<?>> entry : values) {
+                builder.suggest(entry.name());
+            }
+            return builder.buildFuture();
         });
         private final Class<?> clazz;
         private final ArgumentType<?> argumentType;
