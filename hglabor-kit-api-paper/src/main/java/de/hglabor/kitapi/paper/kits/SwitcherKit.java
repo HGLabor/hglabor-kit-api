@@ -17,13 +17,12 @@ import org.bukkit.metadata.FixedMetadataValue;
 import java.util.List;
 
 public class SwitcherKit extends AbstractKit {
-    public final static SwitcherKit INSTANCE = new SwitcherKit();
     private static final ItemStack KIT_ITEM = new KitItemBuilder(Material.SNOWBALL).withAmount(16).build();
-    private final String MARKER = "switcher-projectile";
+    private static final String MARKER = "switcher-projectile";
     private final EntityType projectileType = EntityType.SNOWBALL;
     private float cooldown = 5;
 
-    private SwitcherKit() {
+    public SwitcherKit() {
         super("Switcher");
         onKitItemRightClick((event, kitPlayer) -> {
             event.getPlayer().launchProjectile(Snowball.class).setMetadata(MARKER, new FixedMetadataValue(KitApi.getPlugin(), null));

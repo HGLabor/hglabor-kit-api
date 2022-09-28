@@ -15,6 +15,8 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.EnumSet;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static net.minecraft.commands.Commands.argument;
@@ -45,12 +47,12 @@ public class KitSettingsCommand {
                 });
 
                 for (SupportedArgument argument : SupportedArgument.values()) {
-                    if (declaredField.getType().equals(argument.clazz)) {
+                    if (declaredField.getType().equals(argument.clazz) || Enum.class.isAssignableFrom(declaredField.getType())) {
                         RequiredArgumentBuilder<CommandSourceStack, ?> argumentBuilder = argument("value", argument.argumentType).executes(context -> {
                             Object value;
                             if (argument.getter != null) {
                                 String input = StringArgumentType.getString(context, "value");
-                                value = argument.getter.apply(input);
+                                value = argument.getter.apply(input, declaredField.getType());
                             } else {
                                 value = context.getArgument("value", argument.clazz);
                             }
@@ -63,7 +65,9 @@ public class KitSettingsCommand {
                             return 1;
                         });
                         if (argument.suggestionProvider != null) {
-                            argumentBuilder.suggests(argument.suggestionProvider);
+                            System.out.println(declaredField.getType());
+                            System.out.println(Enum.class.isAssignableFrom(declaredField.getType()));
+                            argumentBuilder.suggests(argument.suggestionProvider.apply(declaredField.getType()));
                         }
                         fieldLiteral.then(argumentBuilder);
                     }
@@ -82,36 +86,36 @@ public class KitSettingsCommand {
         INT(int.class, IntegerArgumentType.integer()),
         FLOAT(float.class, FloatArgumentType.floatArg()),
         LONG(long.class, LongArgumentType.longArg()),
-        ENTITY_TYPE(EntityType.class, StringArgumentType.string(), EntityType::valueOf, (context, builder) -> {
-            for (EntityType value : EntityType.values()) {
-                builder.suggest(value.name());
-            }
-            return builder.buildFuture();
-        }),
-        PARTICLE(Particle.class, StringArgumentType.string(), Particle::valueOf, (context, builder) -> {
-            for (Particle value : Particle.values()) {
-                builder.suggest(value.name());
-            }
-            return builder.buildFuture();
-        }),
-        POTION_EFFECT_TYPE(PotionEffectType.class, StringArgumentType.string(), PotionEffectType::getByName, (context, builder) -> {
+        POTION_EFFECT_TYPE(PotionEffectType.class, StringArgumentType.string(), (s, clazz) -> {
+            return PotionEffectType.getByName(s);
+        }, (clazz) -> (context, builder) -> {
+            System.out.println("###HÄÄÄ");
             for (PotionEffectType value : PotionEffectType.values()) {
                 builder.suggest(value.getName());
             }
             return builder.buildFuture();
         }),
-        MATERIAL(Material.class, StringArgumentType.string(), Material::valueOf, (context, builder) -> {
-            for (Material value : Material.values()) {
-                builder.suggest(value.name());
-            }
-            return builder.buildFuture();
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        ENUM(Enum.class, StringArgumentType.string(), (s, clazz) -> {
+            return Enum.valueOf(((Class) clazz), s);
+        }, (clazz) -> {
+            System.out.println("###" + clazz);
+            return (context, builder) -> {
+                System.out.println("Ja grüß dich");
+                EnumSet<? extends Enum<?>> values = EnumSet.allOf((Class) clazz);
+                for (Enum<? extends Enum<?>> entry : values) {
+                    System.out.println("###" + entry.name());
+                    builder.suggest(entry.name());
+                }
+                return builder.buildFuture();
+            };
         });
         private final Class<?> clazz;
         private final ArgumentType<?> argumentType;
-        private final Function<String, ?> getter;
-        private final SuggestionProvider<CommandSourceStack> suggestionProvider;
+        private final BiFunction<String, Class<?>, ?> getter;
+        private final Function<Class<?>, SuggestionProvider<CommandSourceStack>> suggestionProvider;
 
-        SupportedArgument(Class<?> clazz, ArgumentType<?> argumentType, Function<String, ?> getter, SuggestionProvider<CommandSourceStack> suggestionProvider) {
+        SupportedArgument(Class<?> clazz, ArgumentType<?> argumentType, BiFunction<String, Class<?>, ?> getter, Function<Class<?>, SuggestionProvider<CommandSourceStack>> suggestionProvider) {
             this.clazz = clazz;
             this.argumentType = argumentType;
             this.getter = getter;

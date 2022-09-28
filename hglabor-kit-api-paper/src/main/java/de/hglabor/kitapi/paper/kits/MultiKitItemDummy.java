@@ -4,9 +4,11 @@ import de.hglabor.kitapi.kit.AbstractKit;
 import de.hglabor.kitapi.kit.item.KitItemBuilder;
 import de.hglabor.kitapi.kit.player.IKitPlayer;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.EnumSet;
 import java.util.List;
 
 public class MultiKitItemDummy extends AbstractKit {
@@ -26,7 +28,12 @@ public class MultiKitItemDummy extends AbstractKit {
             kitPlayer.sendMessage("RightClicked " + event.getItem().getType());
         }, KIT_ITEM);
         onKitItemLeftClick((event, kitPlayer) -> {
-            kitPlayer.sendMessage("Clicked " + event.getItem().getType());
+            kitPlayer.sendMessage("Yoo " + event.getItem().getType());
+            Class<?> clazz = EntityType.class;
+            EnumSet<? extends Enum<?>> es = EnumSet.allOf((Class) clazz);
+            for (Enum<? extends Enum<?>> e : es) {
+                kitPlayer.sendMessage(e.name());
+            }
         }, KIT_ITEM_2);
     }
 
